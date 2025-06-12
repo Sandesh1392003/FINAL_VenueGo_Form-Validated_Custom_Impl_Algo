@@ -30,7 +30,7 @@ import mongoose from "mongoose";
 const resolvers = {
   Query: {
     me: async (_, __, { user }) => {
-      // ✅ Directly use `user`
+      // Directly use `user`
       if (!user) {
         throw new Error("Not Authenticated");
       }
