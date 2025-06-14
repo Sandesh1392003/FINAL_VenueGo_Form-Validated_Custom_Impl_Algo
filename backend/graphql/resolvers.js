@@ -161,16 +161,6 @@ const resolvers = {
       }));
     },
 
-
-    pendingVenueOwners: async () => {
-      return await User.find({
-        role: "VenueOwner",
-        roleApprovalStatus: "PENDING",
-      });
-    },
-    pendingVenues: async () => {
-      return await Venue.find({ approvalStatus: "PENDING" }).populate("owner")
-    }
   },
 
   Mutation: {
@@ -187,7 +177,7 @@ const resolvers = {
         categories,
       } = args.input;
 
-      if (!user || user.role !== "VenueOwner") {
+      if (!user || user.role !== "Admin") {
         throw new Error("Not authenticated");
       }
 
@@ -239,7 +229,7 @@ const resolvers = {
     },
 
     updateVenue: async (_, { id, input }, { user }) => {
-      if (!user || user.role !== "VenueOwner") {
+      if (!user || user.role !== "Admin") {
         throw new Error("Not authenticated");
       }
 
@@ -503,7 +493,7 @@ const resolvers = {
     },
 
     // approveBooking: async (parent, args, { user }) => {
-    //   if (!user || user.role !== "VenueOwner") {
+    //   if (!user || user.role !== "Admin") {
     //     throw new Error("Not authenticated");
     //   }
 
@@ -545,7 +535,7 @@ const resolvers = {
     // },
 
     // rejectBooking: async (parent, args, { user }) => {
-    //   if (!user || user.role !== "VenueOwner") {
+    //   if (!user || user.role !== "Admin") {
     //     throw new Error("Not authenticated");
     //   }
 
@@ -963,7 +953,7 @@ const resolvers = {
     },
 
     removeVenue: async (_, { venueId }, { user }) => {
-      if (!user || user.role !== "VenueOwner") {
+      if (!user || user.role !== "Admin") {
         throw new Error("Not authenticated");
       }
 
@@ -994,55 +984,6 @@ const resolvers = {
         success: true,
         message: "Venue deleted successfully, services remain intact.",
       };
-    },
-
-    updateToVenueOwner: async (_, { input }, { user }) => {
-      try {
-        // Check if user is authenticated
-        if (!user) throw new AuthenticationError("User not authenticated");
-
-        const existingUser = await User.findById(user.id);
-        if (!existingUser) throw new UserInputError("User not found");
-
-        // Validate images
-        if (
-          !validateImage(input.profileImg) ||
-          !validateImage(input.legalDocImg)
-        ) {
-          throw new UserInputError("Invalid image data");
-        }
-
-        // Validate location
-        if (!validateLocation(input.address)) {
-          throw new UserInputError("Invalid address data");
-        }
-
-        // Validate Esewa ID
-        if (!validateEsewaId(input.esewaId)) {
-          throw new UserInputError("Invalid Esewa ID");
-        }
-
-        // Update user fields
-        existingUser.name = input.name;
-        existingUser.email = input.email;
-        existingUser.phone = input.phone;
-        existingUser.description = input.description;
-        existingUser.profileImg = input.profileImg;
-        existingUser.legalDocImg = input.legalDocImg;
-        existingUser.address = input.address;
-        existingUser.esewaId = input.esewaId;
-        existingUser.description = input.description;
-        existingUser.roleApprovalStatus = "PENDING";
-
-        await existingUser.save();
-
-        return {
-          success: true,
-          message: "User upgraded to Venue Owner successfully",
-        };
-      } catch (error) {
-        return { success: false, message: error.message };
-      }
     },
 
     generateSignature: async (
@@ -1084,59 +1025,6 @@ const resolvers = {
     async getDeleteSignature(_, { publicId }, context) {
       return deleteSignature(publicId);
     },
-
-    approveVenueOwner: async (_, { userId }, { user }) => {
-      if (!user || user.role !== "Admin")
-        return { success: false, message: "Unauthorized" };
-
-      await User.findByIdAndUpdate(userId, {
-        roleApprovalStatus: "APPROVED",
-        role: "VenueOwner",
-      });
-
-      return { success: true, message: "User approved as Venue Owner." };
-    },
-
-    rejectVenueOwner: async (_, { userId }, { user }) => {
-      if (!user || user.role !== "Admin")
-        return { success: false, message: "Unauthorized" };
-
-      await User.findByIdAndUpdate(userId, {
-        role: "Customer",
-        roleApprovalStatus: "REJECTED",
-      });
-
-      return { success: true, message: "User's venue owner request rejected." };
-    },
-    approveVenue: async (_, { venueId }, { user }) => {
-      if (!user || user.role !== "Admin")
-        return { success: false, message: "Unauthorized" };
-
-      const venue = await Venue.findByIdAndUpdate(
-        venueId,
-        { approvalStatus: "APPROVED" },
-        { new: true }
-      );
-
-      if (!venue) return { success: false, message: "Venue not found" };
-
-      return { success: true, message: "Venue approved successfully." };
-    },
-
-    rejectVenue: async (_, { venueId }, { user }) => {
-      if (!user || user.role !== "Admin")
-        return { success: false, message: "Unauthorized" };
-
-      const venue = await Venue.findByIdAndUpdate(
-        venueId,
-        { approvalStatus: "REJECTED" },
-        { new: true }
-      );
-
-      if (!venue) return { success: false, message: "Venue not found" };
-
-      return { success: true, message: "Venue rejected." };
-    }
 
   },
   User: {

@@ -195,8 +195,6 @@ const typeDefs = gql`
     recentBookings(limit: Int): [Booking]
     topVenues(limit: Int): [TopVenue!]!
 
-    pendingVenueOwners: [User!]!
-    pendingVenues: [Venue!]! # List of all venues awaiting approval
   }
 
   type Mutation {
@@ -223,7 +221,6 @@ const typeDefs = gql`
     ): SignatureResponse!
     verifyPayment(transactionId: String!): Response!
 
-    updateToVenueOwner(input: venueOwnerInput!): Response!
     updateUserDetails(input: UserInput!): Response!
 
     addReview(input: ReviewInput!): ReviewResponse!
@@ -234,11 +231,6 @@ const typeDefs = gql`
     deleteUser(userId: ID!): UserResponse!
     removeVenue(venueId: ID!): Response!
 
-    approveVenueOwner(userId: ID!): Response!
-    rejectVenueOwner(userId: ID!): Response!
-
-    approveVenue(venueId: ID!): Response! # Admin approves a venue
-    rejectVenue(venueId: ID!): Response!
 
     getUploadSignature(
       tags: [String]
