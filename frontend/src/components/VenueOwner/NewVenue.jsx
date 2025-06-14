@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import {
-  Loader,
   Trash2,
   Upload,
   ChevronRight,
@@ -13,19 +12,39 @@ import {
   Users,
   FileText,
   ImageIcon,
-  Package,
   AlertCircle,
-  Clock,
-  Tag,
-  Info,
   Camera,
   Building,
+  ArrowLeft,
+  Star,
+  Sparkles,
+  Home,
+  Layers,
+  Zap,
+  CheckCircle2,
+  ChevronDown,
+  Palette,
+  Calendar,
+  Clock,
+  Compass,
+  Award,
+  Briefcase,
+  Lightbulb,
+  Maximize,
+  Wifi,
+  Coffee,
+  Droplet,
+  Leaf,
+  Flame,
+  Hexagon,
+  Triangle,
+  Circle,
+  Square,
 } from "lucide-react"
 import { useUploadImage } from "../Functions/UploadImage"
 import { useDeleteImage } from "../Functions/deleteImage"
-import { useMutation, useQuery } from "@apollo/client"
+import { useMutation } from "@apollo/client"
 import { ADD_VENUE } from "../Graphql/mutations/VenueGql"
-import { GET_SERVICES } from "../Graphql/query/venuesGql"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { MY_VENUES } from "../Graphql/query/meGql"
@@ -56,6 +75,33 @@ const VENUE_CATEGORIES = [
   "CORPORATE_EVENT_SPACE",
 ]
 
+// Category icons mapping
+const CATEGORY_ICONS = {
+  WEDDING: <Calendar className="h-4 w-4" />,
+  CONFERENCE_HALL: <Briefcase className="h-4 w-4" />,
+  PARTY_HALL: <Sparkles className="h-4 w-4" />,
+  BANQUET: <Coffee className="h-4 w-4" />,
+  OUTDOOR: <Leaf className="h-4 w-4" />,
+  MEETING_ROOM: <Users className="h-4 w-4" />,
+  SEMINAR_HALL: <Lightbulb className="h-4 w-4" />,
+  CONCERT_HALL: <Flame className="h-4 w-4" />,
+  EXHIBITION_CENTER: <Maximize className="h-4 w-4" />,
+  THEATER: <Award className="h-4 w-4" />,
+  SPORTS_ARENA: <Zap className="h-4 w-4" />,
+  RESORT: <Droplet className="h-4 w-4" />,
+  GARDEN: <Leaf className="h-4 w-4" />,
+  CLUBHOUSE: <Star className="h-4 w-4" />,
+  ROOFTOP: <Compass className="h-4 w-4" />,
+  RESTAURANT: <Coffee className="h-4 w-4" />,
+  AUDITORIUM: <Users className="h-4 w-4" />,
+  BEACH_VENUE: <Droplet className="h-4 w-4" />,
+  CONVENTION_CENTER: <Building className="h-4 w-4" />,
+  TRAINING_CENTER: <Lightbulb className="h-4 w-4" />,
+  COWORKING_SPACE: <Wifi className="h-4 w-4" />,
+  PRIVATE_VILLA: <Home className="h-4 w-4" />,
+  CORPORATE_EVENT_SPACE: <Briefcase className="h-4 w-4" />,
+}
+
 const AddVenue = () => {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(1)
@@ -81,7 +127,6 @@ const AddVenue = () => {
   const [cityData, setCityData] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
-  const [selectedServices, setSelectedServices] = useState([])
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -91,7 +136,6 @@ const AddVenue = () => {
     refetchQueries: [{ query: MY_VENUES }],
     awaitRefetchQueries: true,
   })
-  const { data: servicesData, loading: servicesLoading } = useQuery(GET_SERVICES)
 
   // Format category for display
   const formatCategory = (category) => {
@@ -217,37 +261,6 @@ const AddVenue = () => {
     setImagePreview(null)
   }
 
-  const handleServiceToggle = (serviceId) => {
-    const isSelected = selectedServices.some((s) => s.serviceId === serviceId)
-
-    if (isSelected) {
-      setSelectedServices(selectedServices.filter((s) => s.serviceId !== serviceId))
-    } else {
-      setSelectedServices([
-        ...selectedServices,
-        {
-          serviceId,
-          servicePrice: "",
-          category: "hourly", // Default to hourly pricing
-        },
-      ])
-    }
-  }
-
-  const handleServicePriceChange = (serviceId, price) => {
-    setSelectedServices(
-      selectedServices.map((service) =>
-        service.serviceId === serviceId ? { ...service, servicePrice: price } : service,
-      ),
-    )
-  }
-
-  const handleServiceCategoryChange = (serviceId, category) => {
-    setSelectedServices(
-      selectedServices.map((service) => (service.serviceId === serviceId ? { ...service, category } : service)),
-    )
-  }
-
   const handleCategoryToggle = (category) => {
     setVenue((prev) => {
       const categories = [...prev.categories]
@@ -302,17 +315,7 @@ const AddVenue = () => {
         }
         break
 
-      case 4: // Services
-        const invalidServices = selectedServices.filter(
-          (service) => !service.servicePrice || isNaN(service.servicePrice) || service.servicePrice <= 0,
-        )
-
-        if (invalidServices.length > 0) {
-          newErrors.services = "All selected services must have a valid price"
-        }
-        break
-
-      case 5: // Image
+      case 4: // Image
         if (!venue.image) {
           newErrors.image = "Venue image is required"
         }
@@ -376,13 +379,6 @@ const AddVenue = () => {
       }
 
       try {
-        // Format services for the mutation
-        const formattedServices = selectedServices.map((service) => ({
-          serviceId: service.serviceId,
-          servicePrice: Number.parseInt(service.servicePrice, 10),
-          category: service.category, // Include the pricing category (hourly/fixed)
-        }))
-
         const response = await addVenue({
           variables: {
             venueInput: {
@@ -394,9 +390,9 @@ const AddVenue = () => {
               },
               basePricePerHour: Number.parseInt(venue.basePricePerHour, 10),
               capacity: Number.parseInt(venue.capacity, 10),
-              categories: venue.categories, // Changed from category to categories
+              categories: venue.categories,
               image: requiredImageProps,
-              services: formattedServices,
+              services: [], // Empty services array since we removed that step
             },
           },
         })
@@ -423,203 +419,301 @@ const AddVenue = () => {
         error: (err) => `Failed to add venue: ${err.message}`,
       })
       .then(() => {
-        navigate("/dashboard/my-venues")
+        navigate("/Dashboard/my-venues")
       })
       .finally(() => {
         setIsSubmitting(false)
       })
   }
 
+  // Define step data with colors and shapes
+  const steps = [
+    {
+      number: 1,
+      title: "Basics",
+      icon: FileText,
+      color: "bg-gradient-to-br from-purple-400 to-indigo-500",
+      shape: <Hexagon className="absolute -z-10 text-purple-100 h-32 w-32 opacity-30 -top-10 -right-10 rotate-12" />,
+    },
+    {
+      number: 2,
+      title: "Location",
+      icon: MapPin,
+      color: "bg-gradient-to-br from-indigo-400 to-purple-500",
+      shape: <Circle className="absolute -z-10 text-indigo-100 h-32 w-32 opacity-30 -bottom-10 -right-10" />,
+    },
+    {
+      number: 3,
+      title: "Pricing",
+      icon: DollarSign,
+      color: "bg-gradient-to-br from-violet-400 to-purple-500",
+      shape: <Triangle className="absolute -z-10 text-violet-100 h-32 w-32 opacity-30 -top-10 -left-10 rotate-45" />,
+    },
+    {
+      number: 4,
+      title: "Image",
+      icon: ImageIcon,
+      color: "bg-gradient-to-br from-purple-400 to-fuchsia-500",
+      shape: <Square className="absolute -z-10 text-purple-100 h-32 w-32 opacity-30 -bottom-10 -left-10 rotate-12" />,
+    },
+    {
+      number: 5,
+      title: "Review",
+      icon: Check,
+      color: "bg-gradient-to-br from-indigo-400 to-purple-500",
+      shape: <Hexagon className="absolute -z-10 text-indigo-100 h-32 w-32 opacity-30 -top-10 -right-10 rotate-45" />,
+    },
+  ]
+
+  // Get current step data
+  const currentStepData = steps[currentStep - 1]
+
+  // Calculate progress percentage
+  const totalSteps = steps.length
+  const progress = Math.round((currentStep / totalSteps) * 100)
+
   // Render different steps based on currentStep
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-gray-900 rounded-full p-2 text-white">
-                <FileText className="h-5 w-5" />
+          <div className="space-y-8 relative overflow-hidden">
+            {currentStepData.shape}
+
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div
+                className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
+              >
+                <FileText className="h-8 w-8" />
               </div>
-              <h2 className="text-xl font-semibold ml-2">Basic Information</h2>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  Tell Us About Your Venue
+                </h2>
+                <p className="text-slate-600 mt-1">Start with the basics to showcase your space</p>
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Venue Name <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={venue.name}
-                onChange={handleChange}
-                placeholder="Enter venue name"
-                className={`mt-1 block w-full rounded-lg border ${
-                  errors.name ? "border-rose-500" : "border-gray-300"
-                } px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
-              />
-              {errors.name && <p className="mt-1 text-sm text-rose-500">{errors.name}</p>}
-            </div>
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-purple-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={venue.description}
-                onChange={handleChange}
-                placeholder="Describe your venue in detail"
-                rows="4"
-                className={`mt-1 block w-full rounded-lg border ${
-                  errors.description ? "border-rose-500" : "border-gray-300"
-                } px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
-              ></textarea>
-              {errors.description && <p className="mt-1 text-sm text-rose-500">{errors.description}</p>}
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-gray-700">
-                  Venue Categories <span className="text-rose-500">*</span>
+                <label htmlFor="name" className="block text-base font-medium text-slate-700 mb-2">
+                  Venue Name <span className="text-purple-500">*</span>
                 </label>
-                <span className="text-xs text-gray-500">Selected: {venue.categories.length}</span>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={venue.name}
+                  onChange={handleChange}
+                  placeholder="Give your venue a memorable name"
+                  className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.name ? "border-rose-300 bg-rose-50" : "border-purple-200"
+                    } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 text-lg`}
+                />
+                {errors.name && <p className="mt-2 text-sm text-rose-500">{errors.name}</p>}
               </div>
-              <p className="text-sm text-gray-500 mb-2">Select all categories that apply to your venue</p>
-              <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
-                {VENUE_CATEGORIES.map((category) => (
-                  <div
-                    key={category}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                      venue.categories.includes(category)
-                        ? "border-gray-900 bg-gray-50"
-                        : "border-gray-200 hover:border-gray-400"
-                    }`}
-                    onClick={() => handleCategoryToggle(category)}
-                  >
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                          venue.categories.includes(category) ? "bg-gray-900 border-gray-900" : "border-gray-300"
-                        }`}
-                      >
-                        {venue.categories.includes(category) && <Check className="h-3 w-3 text-white" />}
-                      </div>
-                    </div>
-                    <span className="ml-2 text-sm">{formatCategory(category)}</span>
+
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-purple-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-br-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+
+                <label htmlFor="description" className="block text-base font-medium text-slate-700 mb-2">
+                  Description <span className="text-purple-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={venue.description}
+                  onChange={handleChange}
+                  placeholder="Describe what makes your venue special. Include amenities, atmosphere, and unique features."
+                  rows="5"
+                  className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.description ? "border-rose-300 bg-rose-50" : "border-purple-200"
+                    } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
+                ></textarea>
+                {errors.description && <p className="mt-2 text-sm text-rose-500">{errors.description}</p>}
+                <div className="mt-3 flex items-start text-xs text-slate-500 bg-purple-50 p-3 rounded-lg">
+                  <Lightbulb className="h-4 w-4 mr-2 flex-shrink-0 text-purple-600" />
+                  <p>A detailed description helps customers understand what to expect from your venue.</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-purple-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-tl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h3 className="text-base font-medium text-slate-700">
+                      Venue Categories <span className="text-purple-500">*</span>
+                    </h3>
+                    <p className="text-sm text-slate-500 mt-1">Select all categories that apply to your venue</p>
                   </div>
-                ))}
+                  <span className="text-sm font-medium bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-1.5 rounded-full">
+                    {venue.categories.length} selected
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {VENUE_CATEGORIES.map((category) => (
+                    <div
+                      key={category}
+                      onClick={() => handleCategoryToggle(category)}
+                      className={`flex items-center p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-300 ${venue.categories.includes(category)
+                          ? "border-purple-500 bg-purple-50 shadow-sm"
+                          : "border-slate-200 hover:border-purple-300 hover:bg-purple-50/30"
+                        }`}
+                    >
+                      <div
+                        className={`w-7 h-7 flex items-center justify-center rounded-lg ${venue.categories.includes(category)
+                            ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white"
+                            : "border-2 border-slate-200"
+                          }`}
+                      >
+                        {venue.categories.includes(category) ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          CATEGORY_ICONS[category] || <Palette className="h-4 w-4" />
+                        )}
+                      </div>
+                      <span className="ml-2.5 text-sm font-medium">{formatCategory(category)}</span>
+                    </div>
+                  ))}
+                </div>
+                {errors.categories && <p className="mt-3 text-sm text-rose-500">{errors.categories}</p>}
               </div>
-              {errors.categories && <p className="mt-1 text-sm text-rose-500">{errors.categories}</p>}
             </div>
           </div>
         )
 
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-gray-900 rounded-full p-2 text-white">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <h2 className="text-xl font-semibold ml-2">Location Details</h2>
-            </div>
+          <div className="space-y-8 relative overflow-hidden">
+            {currentStepData.shape}
 
-            <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div
+                className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
+              >
+                <MapPin className="h-8 w-8" />
+              </div>
               <div>
-                <label htmlFor="province" className="block text-sm font-medium text-gray-700">
-                  Province <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  id="province"
-                  name="location.province"
-                  value={venue.location.province}
-                  onChange={handleChange}
-                  className={`mt-1 block w-full rounded-lg border ${
-                    errors.province ? "border-rose-500" : "border-gray-300"
-                  } px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
-                >
-                  <option value="">Select a province</option>
-                  {Object.keys(cityData).map((province) => (
-                    <option key={province} value={province}>
-                      {province}
-                    </option>
-                  ))}
-                </select>
-                {errors.province && <p className="mt-1 text-sm text-rose-500">{errors.province}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                  City <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  id="city"
-                  name="location.city"
-                  value={venue.location.city}
-                  onChange={handleChange}
-                  disabled={!venue.location.province}
-                  className={`mt-1 block w-full rounded-lg border ${
-                    errors.city ? "border-rose-500" : "border-gray-300"
-                  } px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed`}
-                >
-                  <option value="">Select a city</option>
-                  {cities.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
-                {errors.city && <p className="mt-1 text-sm text-rose-500">{errors.city}</p>}
-              </div>
-
-              <div className="sm:col-span-2">
-                <label htmlFor="street" className="block text-sm font-medium text-gray-700">
-                  Street Address <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="street"
-                  name="location.street"
-                  value={venue.location.street}
-                  onChange={handleChange}
-                  placeholder="Enter street address"
-                  className={`mt-1 block w-full rounded-lg border ${
-                    errors.street ? "border-rose-500" : "border-gray-300"
-                  } px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
-                />
-                {errors.street && <p className="mt-1 text-sm text-rose-500">{errors.street}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                  ZIP Code
-                </label>
-                <input
-                  type="text"
-                  id="zipCode"
-                  name="location.zipCode"
-                  value={venue.location.zipCode}
-                  onChange={handleChange}
-                  placeholder="Optional"
-                  className={`mt-1 block w-full rounded-lg border ${
-                    errors.zipCode ? "border-rose-500" : "border-gray-300"
-                  } px-3 py-2 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
-                />
-                {errors.zipCode && <p className="mt-1 text-sm text-rose-500">{errors.zipCode}</p>}
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Where's Your Venue Located?
+                </h2>
+                <p className="text-slate-600 mt-1">Help customers find your space easily</p>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-indigo-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+
+              <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-6">
+                <div className="sm:col-span-2">
+                  <label htmlFor="street" className="block text-base font-medium text-slate-700 mb-2">
+                    Street Address <span className="text-indigo-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Home className="h-5 w-5 text-indigo-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="street"
+                      name="location.street"
+                      value={venue.location.street}
+                      onChange={handleChange}
+                      placeholder="Enter full street address"
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.street ? "border-rose-300 bg-rose-50" : "border-indigo-200"
+                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
+                    />
+                  </div>
+                  {errors.street && <p className="mt-2 text-sm text-rose-500">{errors.street}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="province" className="block text-base font-medium text-slate-700 mb-2">
+                    Province <span className="text-indigo-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="province"
+                      name="location.province"
+                      value={venue.location.province}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.province ? "border-rose-300 bg-rose-50" : "border-indigo-200"
+                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none bg-white pr-10`}
+                    >
+                      <option value="">Select a province</option>
+                      {Object.keys(cityData).map((province) => (
+                        <option key={province} value={province}>
+                          {province}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown className="h-5 w-5 text-indigo-400" />
+                    </div>
+                  </div>
+                  {errors.province && <p className="mt-2 text-sm text-rose-500">{errors.province}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="city" className="block text-base font-medium text-slate-700 mb-2">
+                    City <span className="text-indigo-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="city"
+                      name="location.city"
+                      value={venue.location.city}
+                      onChange={handleChange}
+                      disabled={!venue.location.province}
+                      className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.city ? "border-rose-300 bg-rose-50" : "border-indigo-200"
+                        } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none bg-white pr-10 disabled:bg-slate-100 disabled:text-slate-400`}
+                    >
+                      <option value="">Select a city</option>
+                      {cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown className="h-5 w-5 text-indigo-400" />
+                    </div>
+                  </div>
+                  {errors.city && <p className="mt-2 text-sm text-rose-500">{errors.city}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="zipCode" className="block text-base font-medium text-slate-700 mb-2">
+                    ZIP Code <span className="text-slate-400 text-sm">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    name="location.zipCode"
+                    value={venue.location.zipCode}
+                    onChange={handleChange}
+                    placeholder="Enter ZIP code"
+                    className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.zipCode ? "border-rose-300 bg-rose-50" : "border-indigo-200"
+                      } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
+                  />
+                  {errors.zipCode && <p className="mt-2 text-sm text-rose-500">{errors.zipCode}</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-5 rounded-2xl border border-indigo-200 relative overflow-hidden">
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-100/50 rounded-tr-[100px] -z-10"></div>
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-gray-500" />
+                  <Compass className="h-6 w-6 text-indigo-600" />
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600">
-                    Providing accurate location details helps customers find your venue easily. Make sure to include any
-                    landmarks or special directions in the street address if needed.
+                <div className="ml-4">
+                  <h3 className="text-base font-medium text-indigo-800">Location Matters</h3>
+                  <p className="text-sm text-indigo-700 mt-1">
+                    Providing accurate location details helps customers find your venue easily. Consider adding nearby
+                    landmarks or special directions in the street address field.
                   </p>
                 </div>
               </div>
@@ -629,22 +723,36 @@ const AddVenue = () => {
 
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-gray-900 rounded-full p-2 text-white">
-                <DollarSign className="h-5 w-5" />
+          <div className="space-y-8 relative overflow-hidden">
+            {currentStepData.shape}
+
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div
+                className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
+              >
+                <DollarSign className="h-8 w-8" />
               </div>
-              <h2 className="text-xl font-semibold ml-2">Capacity & Pricing</h2>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+                  Set Your Pricing & Capacity
+                </h2>
+                <p className="text-slate-600 mt-1">Define how many people can fit and how much it costs</p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label htmlFor="basePricePerHour" className="block text-sm font-medium text-gray-700">
-                  Base Price per Hour (Rs.) <span className="text-rose-500">*</span>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-violet-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-50 to-purple-50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+
+                <label htmlFor="basePricePerHour" className="block text-base font-medium text-slate-700 mb-3">
+                  Base Price per Hour <span className="text-violet-500">*</span>
                 </label>
-                <div className="mt-1 relative rounded-lg shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">Rs.</span>
+
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500">
+                      <DollarSign className="h-5 w-5 text-white" />
+                    </div>
                   </div>
                   <input
                     type="number"
@@ -654,24 +762,35 @@ const AddVenue = () => {
                     onChange={handleChange}
                     min="0"
                     placeholder="0"
-                    className={`block w-full pl-12 pr-12 py-2 rounded-lg border ${
-                      errors.basePricePerHour ? "border-rose-500" : "border-gray-300"
-                    } shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
+                    className={`w-full pl-16 pr-20 py-4 rounded-xl border-2 ${errors.basePricePerHour ? "border-rose-300 bg-rose-50" : "border-violet-200"
+                      } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-2xl font-bold text-slate-800 bg-white transition-all duration-300`}
                   />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">/hour</span>
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span className="text-slate-500 font-medium">/hour</span>
                   </div>
                 </div>
-                {errors.basePricePerHour && <p className="mt-1 text-sm text-rose-500">{errors.basePricePerHour}</p>}
+                {errors.basePricePerHour && <p className="mt-2 text-sm text-rose-500">{errors.basePricePerHour}</p>}
+
+                <div className="mt-4 flex items-center bg-violet-50 p-3 rounded-xl">
+                  <Clock className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
+                  <p className="text-sm text-violet-700">
+                    This is the hourly rate customers will pay to book your venue
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
-                  Capacity (Number of People) <span className="text-rose-500">*</span>
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-violet-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-violet-50 rounded-tr-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+
+                <label htmlFor="capacity" className="block text-base font-medium text-slate-700 mb-3">
+                  Capacity <span className="text-violet-500">*</span>
                 </label>
-                <div className="mt-1 relative rounded-lg shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Users className="h-5 w-5 text-gray-400" />
+
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500">
+                      <Users className="h-5 w-5 text-white" />
+                    </div>
                   </div>
                   <input
                     type="number"
@@ -681,26 +800,48 @@ const AddVenue = () => {
                     onChange={handleChange}
                     min="1"
                     placeholder="0"
-                    className={`block w-full pl-10 py-2 rounded-lg border ${
-                      errors.capacity ? "border-rose-500" : "border-gray-300"
-                    } shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500`}
+                    className={`w-full pl-16 pr-20 py-4 rounded-xl border-2 ${errors.capacity ? "border-rose-300 bg-rose-50" : "border-violet-200"
+                      } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-2xl font-bold text-slate-800 bg-white transition-all duration-300`}
                   />
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span className="text-slate-500 font-medium">people</span>
+                  </div>
                 </div>
-                {errors.capacity && <p className="mt-1 text-sm text-rose-500">{errors.capacity}</p>}
+                {errors.capacity && <p className="mt-2 text-sm text-rose-500">{errors.capacity}</p>}
+
+                <div className="mt-4 flex items-center bg-violet-50 p-3 rounded-xl">
+                  <Users className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
+                  <p className="text-sm text-violet-700">Maximum number of people your venue can accommodate</p>
+                </div>
               </div>
             </div>
 
-            <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+            <div className="bg-gradient-to-r from-violet-50 to-purple-50 p-5 rounded-2xl border border-violet-200 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-violet-100/50 rounded-bl-[100px] -z-10"></div>
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-amber-500" />
+                  <Star className="h-6 w-6 text-violet-500" />
                 </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-amber-800">Pricing Tips</h3>
-                  <p className="text-sm text-amber-700 mt-1">
-                    Set a competitive base price that reflects your venue's value. You can add additional services in
-                    the next step to increase your revenue.
-                  </p>
+                <div className="ml-4">
+                  <h3 className="text-base font-medium text-violet-800">Pricing Tips</h3>
+                  <ul className="mt-2 space-y-2">
+                    <li className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm text-violet-700">
+                        Research similar venues in your area to set competitive pricing
+                      </p>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm text-violet-700">Consider seasonal demand when setting your base price</p>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm text-violet-700">
+                        You can always adjust your pricing later based on booking demand
+                      </p>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -709,210 +850,59 @@ const AddVenue = () => {
 
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-gray-900 rounded-full p-2 text-white">
-                <Package className="h-5 w-5" />
+          <div className="space-y-8 relative overflow-hidden">
+            {currentStepData.shape}
+
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div
+                className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
+              >
+                <ImageIcon className="h-8 w-8" />
               </div>
-              <h2 className="text-xl font-semibold ml-2">Services</h2>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-fuchsia-600 to-purple-600 bg-clip-text text-transparent">
+                  Show Off Your Venue
+                </h2>
+                <p className="text-slate-600 mt-1">Upload a high-quality image to attract customers</p>
+              </div>
             </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">Select Services (Optional)</label>
-                <span className="text-xs text-gray-500">Selected: {selectedServices.length}</span>
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-fuchsia-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-slate-800">Upload Venue Image</h3>
+                  <p className="text-slate-500 mt-1">This will be the main image displayed to potential customers</p>
+                </div>
+                <span className="text-sm font-medium bg-gradient-to-r from-fuchsia-500 to-purple-500 text-white px-3 py-1.5 rounded-full">
+                  Required
+                </span>
               </div>
-              <p className="text-sm text-gray-500 mb-4">
-                Select the services you offer with this venue and set your pricing for each service.
-              </p>
-
-              {servicesLoading ? (
-                <div className="flex justify-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex flex-col items-center">
-                    <Loader className="h-8 w-8 text-gray-400 animate-spin mb-2" />
-                    <p className="text-sm text-gray-500">Loading services...</p>
-                  </div>
-                </div>
-              ) : servicesData?.services?.length > 0 ? (
-                <div className="space-y-4">
-                  {servicesData.services.map((service) => {
-                    const isSelected = selectedServices.some((s) => s.serviceId === service.id)
-                    const selectedService = selectedServices.find((s) => s.serviceId === service.id)
-
-                    return (
-                      <div
-                        key={service.id}
-                        className={`border rounded-lg p-4 transition-all ${
-                          isSelected ? "border-gray-900 bg-gray-50" : "border-gray-200 hover:border-gray-400"
-                        }`}
-                      >
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => handleServiceToggle(service.id)}
-                              className={`h-5 w-5 rounded-md border ${
-                                isSelected ? "bg-gray-900 border-gray-900" : "border-gray-300"
-                              } flex items-center justify-center`}
-                            >
-                              {isSelected && <Check className="h-3 w-3 text-white" />}
-                            </button>
-                          </div>
-
-                          {/* Service Image */}
-                          {service.image?.secure_url && (
-                            <div className="ml-3 mr-3 flex-shrink-0">
-                              <img
-                                src={service.image.secure_url || "/placeholder.svg"}
-                                alt={service.name}
-                                className="w-16 h-16 object-cover rounded-md"
-                              />
-                            </div>
-                          )}
-
-                          <div className="ml-3 flex-grow">
-                            <div className="flex justify-between">
-                              <label
-                                htmlFor={`service-${service.id}`}
-                                className="font-medium text-gray-700 cursor-pointer"
-                              >
-                                {service.name}
-                              </label>
-                              <span className="text-sm text-gray-500">Base: Rs. {service.basePricePerHour}/hour</span>
-                            </div>
-
-                            {isSelected && (
-                              <div className="mt-3 space-y-3">
-                                {/* Pricing Category Selection */}
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Pricing Type</label>
-                                  <div className="flex space-x-4">
-                                    <div className="flex items-center">
-                                      <input
-                                        type="radio"
-                                        id={`hourly-${service.id}`}
-                                        name={`pricing-type-${service.id}`}
-                                        checked={selectedService.category === "hourly"}
-                                        onChange={() => handleServiceCategoryChange(service.id, "hourly")}
-                                        className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
-                                      />
-                                      <label
-                                        htmlFor={`hourly-${service.id}`}
-                                        className="ml-2 block text-sm text-gray-700"
-                                      >
-                                        <div className="flex items-center">
-                                          <Clock className="h-4 w-4 mr-1" />
-                                          Hourly
-                                        </div>
-                                      </label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <input
-                                        type="radio"
-                                        id={`fixed-${service.id}`}
-                                        name={`pricing-type-${service.id}`}
-                                        checked={selectedService.category === "fixed"}
-                                        onChange={() => handleServiceCategoryChange(service.id, "fixed")}
-                                        className="h-4 w-4 text-gray-900 focus:ring-gray-500 border-gray-300"
-                                      />
-                                      <label
-                                        htmlFor={`fixed-${service.id}`}
-                                        className="ml-2 block text-sm text-gray-700"
-                                      >
-                                        <div className="flex items-center">
-                                          <Tag className="h-4 w-4 mr-1" />
-                                          Fixed
-                                        </div>
-                                      </label>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Price Input */}
-                                <div>
-                                  <label
-                                    htmlFor={`price-${service.id}`}
-                                    className="block text-sm font-medium text-gray-700"
-                                  >
-                                    Your Price {selectedService.category === "hourly" ? "per Hour" : ""} (Rs.)
-                                  </label>
-                                  <div className="mt-1 relative rounded-md shadow-sm">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                      <span className="text-gray-500 sm:text-sm">Rs.</span>
-                                    </div>
-                                    <input
-                                      type="number"
-                                      id={`price-${service.id}`}
-                                      value={selectedService?.servicePrice || ""}
-                                      onChange={(e) => handleServicePriceChange(service.id, e.target.value)}
-                                      min="0"
-                                      placeholder="0"
-                                      className="block w-full pl-12 py-2 rounded-md border border-gray-300 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                                    />
-                                    {selectedService.category === "hourly" && (
-                                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span className="text-gray-500 sm:text-sm">/hour</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-8 text-center border border-gray-200">
-                  <Package className="mx-auto h-10 w-10 text-gray-400 mb-2" />
-                  <p className="text-gray-500">No services available</p>
-                </div>
-              )}
-
-              {errors.services && <p className="mt-2 text-sm text-rose-500">{errors.services}</p>}
-            </div>
-          </div>
-        )
-
-      case 5:
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-gray-900 rounded-full p-2 text-white">
-                <ImageIcon className="h-5 w-5" />
-              </div>
-              <h2 className="text-xl font-semibold ml-2">Venue Image</h2>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Venue Image <span className="text-rose-500">*</span>
-              </label>
-              <p className="text-sm text-gray-500 mb-4">
-                Upload a high-quality image of your venue. This will be the main image displayed to potential customers.
-              </p>
 
               <div
-                className={`mt-1 flex flex-col justify-center items-center px-6 pt-5 pb-6 border-2 ${
-                  errors.image ? "border-rose-300" : isDragging ? "border-gray-900" : "border-gray-300"
-                } border-dashed rounded-lg transition-colors ${isDragging ? "bg-gray-50" : ""}`}
+                className={`mt-4 flex flex-col justify-center items-center px-6 pt-8 pb-8 border-3 ${errors.image
+                    ? "border-rose-300 bg-rose-50"
+                    : isDragging
+                      ? "border-fuchsia-400 bg-fuchsia-50"
+                      : "border-fuchsia-200"
+                  } border-dashed rounded-2xl transition-all duration-300`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
                 {!imagePreview ? (
-                  <div className="space-y-3 text-center py-8">
-                    <Camera className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex flex-col text-sm text-gray-600">
-                      <label
-                        htmlFor="image"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-gray-900 hover:text-gray-700 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-gray-500"
-                      >
-                        <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium bg-white hover:bg-gray-50">
-                          <Upload className="mr-2 h-4 w-4" />
-                          Choose a file
+                  <div className="space-y-6 text-center py-8">
+                    <div className="flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-fuchsia-100 to-purple-100">
+                      <Camera className="h-10 w-10 text-fuchsia-500" />
+                    </div>
+                    <div className="flex flex-col text-sm text-slate-600">
+                      <p className="text-base font-medium text-slate-700 mb-2">Drag and drop your image here</p>
+                      <p className="text-slate-500 mb-4">or</p>
+                      <label htmlFor="image" className="relative cursor-pointer mx-auto">
+                        <span className="inline-flex items-center px-6 py-3 border-2 border-fuchsia-300 rounded-xl shadow-sm text-base font-medium bg-gradient-to-r from-fuchsia-500 to-purple-500 text-white hover:shadow-lg transition-all duration-300">
+                          <Upload className="mr-2 h-5 w-5" />
+                          Browse Files
                         </span>
                         <input
                           id="image"
@@ -923,43 +913,58 @@ const AddVenue = () => {
                           className="sr-only"
                         />
                       </label>
-                      <p className="mt-2">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
                   </div>
                 ) : (
                   <div className="relative w-full">
                     <img
                       src={imagePreview || "/placeholder.svg"}
                       alt="Venue preview"
-                      className="h-64 w-full object-cover rounded-md"
+                      className="h-80 w-full object-cover rounded-xl shadow-md"
                     />
-                    <button
-                      type="button"
-                      onClick={handleImageRemove}
-                      className="absolute top-2 right-2 bg-white bg-opacity-75 text-gray-700 rounded-full p-2 hover:bg-opacity-100 transition-colors"
-                      aria-label="Remove image"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
+                    <div className="absolute top-0 right-0 p-2">
+                      <button
+                        type="button"
+                        onClick={handleImageRemove}
+                        className="flex items-center justify-center w-10 h-10 bg-white bg-opacity-75 backdrop-blur-sm text-slate-700 rounded-full hover:bg-opacity-100 transition-all duration-300 shadow-md"
+                        aria-label="Remove image"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {errors.image && <p className="mt-2 text-sm text-rose-500">{errors.image}</p>}
+              {errors.image && <p className="mt-3 text-sm text-rose-500">{errors.image}</p>}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-r from-fuchsia-50 to-purple-50 p-5 rounded-2xl border border-fuchsia-200 relative overflow-hidden">
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-fuchsia-100/50 rounded-tl-[100px] -z-10"></div>
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-gray-500" />
+                  <Zap className="h-6 w-6 text-fuchsia-500" />
                 </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-gray-700">Image Tips</h3>
-                  <ul className="mt-1 text-sm text-gray-600 list-disc pl-5 space-y-1">
-                    <li>Use high-quality, well-lit images that showcase your venue's best features</li>
-                    <li>Landscape orientation works best for venue listings</li>
-                    <li>Ensure the image represents your venue accurately to set proper expectations</li>
+                <div className="ml-4">
+                  <h3 className="text-base font-medium text-fuchsia-800">Image Tips</h3>
+                  <ul className="mt-2 space-y-2">
+                    <li className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-fuchsia-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm text-fuchsia-700">
+                        Use high-quality, well-lit images that showcase your venue's best features
+                      </p>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-fuchsia-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm text-fuchsia-700">Landscape orientation works best for venue listings</p>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-fuchsia-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm text-fuchsia-700">
+                        Ensure the image represents your venue accurately to set proper expectations
+                      </p>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -967,143 +972,120 @@ const AddVenue = () => {
           </div>
         )
 
-      case 6:
+      case 5:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-gray-900 rounded-full p-2 text-white">
-                <Check className="h-5 w-5" />
+          <div className="space-y-8 relative overflow-hidden">
+            {currentStepData.shape}
+
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div
+                className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
+              >
+                <Check className="h-8 w-8" />
               </div>
-              <h2 className="text-xl font-semibold ml-2">Review & Submit</h2>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Review & Submit
+                </h2>
+                <p className="text-slate-600 mt-1">Verify your venue details before submitting</p>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Venue Summary</h3>
+            <div className="bg-white p-6 rounded-2xl shadow-md border border-indigo-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
 
-              <div className="space-y-6">
-                {/* Basic Information */}
-                <div className="border-b border-gray-200 pb-4">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Basic Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Name</p>
-                      <p className="font-medium">{venue.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Categories</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {venue.categories.length > 0 ? (
-                          venue.categories.map((category) => (
-                            <span
-                              key={category}
-                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800"
-                            >
-                              {formatCategory(category)}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-gray-400">None selected</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-sm text-gray-500">Description</p>
-                      <p className="text-sm mt-1">{venue.description}</p>
-                    </div>
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center">
+                    <Building className="h-6 w-6 text-white" />
                   </div>
                 </div>
+                <div className="ml-4">
+                  <h3 className="text-xl font-bold text-slate-900">{venue.name}</h3>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {venue.categories.map((category) => (
+                      <span
+                        key={category}
+                        className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800"
+                      >
+                        {formatCategory(category)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-                {/* Location */}
-                <div className="border-b border-gray-200 pb-4">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Location</h4>
-                  <div className="flex items-start">
-                    <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
-                    <p>
+              <div className="space-y-6">
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="mb-6">
+                    <img
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="Venue preview"
+                      className="w-full h-64 object-cover rounded-xl shadow-sm"
+                    />
+                  </div>
+                )}
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Location Card */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                    <div className="flex items-center mb-3">
+                      <MapPin className="h-5 w-5 text-blue-500 mr-2" />
+                      <h4 className="font-medium text-blue-800">Location</h4>
+                    </div>
+                    <p className="text-sm text-blue-700">
                       {venue.location.street}, {venue.location.city}, {venue.location.province}
                       {venue.location.zipCode ? `, ${venue.location.zipCode}` : ""}
                     </p>
                   </div>
-                </div>
 
-                {/* Capacity & Pricing */}
-                <div className="border-b border-gray-200 pb-4">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
-                    Capacity & Pricing
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center">
-                      <Users className="h-5 w-5 text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-500">Capacity</p>
-                        <p className="font-medium">{venue.capacity} people</p>
-                      </div>
+                  {/* Pricing Card */}
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
+                    <div className="flex items-center mb-3">
+                      <DollarSign className="h-5 w-5 text-amber-500 mr-2" />
+                      <h4 className="font-medium text-amber-800">Pricing</h4>
                     </div>
-                    <div className="flex items-center">
-                      <DollarSign className="h-5 w-5 text-gray-400 mr-2" />
-                      <div>
-                        <p className="text-sm text-gray-500">Base Price</p>
-                        <p className="font-medium">Rs. {venue.basePricePerHour}/hour</p>
-                      </div>
+                    <p className="text-sm text-amber-700">
+                      <span className="font-bold text-lg">Rs. {venue.basePricePerHour}</span> per hour
+                    </p>
+                  </div>
+
+                  {/* Capacity Card */}
+                  <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-4 rounded-xl border border-teal-200">
+                    <div className="flex items-center mb-3">
+                      <Users className="h-5 w-5 text-teal-500 mr-2" />
+                      <h4 className="font-medium text-teal-800">Capacity</h4>
                     </div>
+                    <p className="text-sm text-teal-700">
+                      <span className="font-bold text-lg">{venue.capacity}</span> people
+                    </p>
+                  </div>
+
+                  {/* Description Card */}
+                  <div className="bg-gradient-to-r from-fuchsia-50 to-purple-50 p-4 rounded-xl border border-fuchsia-200">
+                    <div className="flex items-center mb-3">
+                      <FileText className="h-5 w-5 text-fuchsia-500 mr-2" />
+                      <h4 className="font-medium text-fuchsia-800">Description</h4>
+                    </div>
+                    <p className="text-sm text-fuchsia-700 line-clamp-3">{venue.description}</p>
                   </div>
                 </div>
-
-                {/* Services */}
-                {selectedServices.length > 0 && (
-                  <div className="border-b border-gray-200 pb-4">
-                    <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Services</h4>
-                    <div className="space-y-2">
-                      {selectedServices.map((service) => {
-                        const serviceDetails = servicesData?.services.find((s) => s.id === service.serviceId)
-                        return (
-                          <div key={service.serviceId} className="flex items-center justify-between text-sm py-1">
-                            <div className="flex items-center">
-                              {serviceDetails?.image?.secure_url && (
-                                <img
-                                  src={serviceDetails.image.secure_url || "/placeholder.svg"}
-                                  alt={serviceDetails?.name || "Service"}
-                                  className="w-8 h-8 object-cover rounded-md mr-2"
-                                />
-                              )}
-                              <span>{serviceDetails?.name || "Service"}</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="font-medium">Rs. {service.servicePrice}</span>
-                              <span className="text-gray-500 text-xs ml-1">
-                                ({service.category === "hourly" ? "per hour" : "fixed"})
-                              </span>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Venue Image */}
-                {imagePreview && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Venue Image</h4>
-                    <div className="mt-2">
-                      <img
-                        src={imagePreview || "/placeholder.svg"}
-                        alt="Venue preview"
-                        className="h-48 w-full object-cover rounded-lg"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-md">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-5 rounded-2xl border border-indigo-200 relative overflow-hidden">
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-100/50 rounded-tr-[100px] -z-10"></div>
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-amber-400" />
+                  <AlertCircle className="h-6 w-6 text-indigo-500" />
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm text-amber-700">
-                    Please review all information carefully. Click the Submit button below to create your venue.
+                <div className="ml-4">
+                  <h3 className="text-base font-medium text-indigo-800">Final Check</h3>
+                  <p className="text-sm text-indigo-700 mt-1">
+                    Please review all information carefully. Once submitted, your venue will be visible to potential
+                    customers. You can edit these details later if needed.
                   </p>
                 </div>
               </div>
@@ -1116,91 +1098,109 @@ const AddVenue = () => {
     }
   }
 
-  // Progress bar calculation
-  const totalSteps = 6
-  const progress = Math.round((currentStep / totalSteps) * 100)
-
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Add New Venue</h1>
-            <p className="text-sm text-gray-500 mt-1">Complete all steps to list your venue</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div className="flex items-center">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg mr-4">
+              <Building className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                Add New Venue
+              </h1>
+              <p className="text-slate-500 mt-1">List your space and start earning</p>
+            </div>
           </div>
+
           <button
-            onClick={() => navigate("/dashboard/my-venues")}
-            className="text-sm text-gray-600 hover:text-gray-900 flex items-center"
+            onClick={() => navigate("/Dashboard/my-venues")}
+            className="inline-flex items-center px-4 py-2 bg-white border-2 border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shadow-sm"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Venues
           </button>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress Steps */}
         <div className="mb-8">
-          <div className="flex justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentStep} of {totalSteps}
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center">
+              <Layers className="h-5 w-5 text-slate-500 mr-2" />
+              <span className="text-base font-medium text-slate-700">
+                Step {currentStep} of {totalSteps}
+              </span>
+            </div>
+            <span className="text-base font-medium bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              {progress}% Complete
             </span>
-            <span className="text-sm font-medium text-gray-700">{progress}% Complete</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+
+          <div className="relative w-full h-3 bg-slate-200 rounded-full overflow-hidden">
             <div
-              className="bg-gray-900 h-2 rounded-full transition-all duration-300"
+              className={`absolute top-0 left-0 h-full bg-gradient-to-r ${currentStepData.color} transition-all duration-500 ease-in-out`}
               style={{ width: `${progress}%` }}
             ></div>
           </div>
         </div>
 
-        {/* Step indicators */}
-        <div className="hidden md:flex justify-between mb-8">
-          {[...Array(totalSteps)].map((_, index) => {
-            const stepNum = index + 1
-            const isActive = stepNum === currentStep
-            const isCompleted = stepNum < currentStep
+        {/* Step Indicators */}
+        <div className="flex justify-between mb-10 px-2">
+          {steps.map((step) => {
+            const isActive = step.number === currentStep
+            const isCompleted = step.number < currentStep
+            const Icon = step.icon
 
             return (
-              <div key={stepNum} className="flex flex-col items-center">
+              <div key={step.number} className="flex flex-col items-center relative group">
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    isActive
-                      ? "bg-gray-900 text-white"
+                  className={`flex items-center justify-center w-12 h-12 rounded-xl shadow-md transition-all duration-300 ${isActive
+                      ? `${step.color} text-white scale-110`
                       : isCompleted
-                        ? "bg-gray-700 text-white"
-                        : "bg-gray-200 text-gray-700"
-                  }`}
+                        ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white"
+                        : "bg-white text-slate-400 border border-slate-200"
+                    }`}
                 >
-                  {isCompleted ? <Check className="h-4 w-4" /> : stepNum}
+                  {isCompleted ? <Check className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
                 </div>
-                <span className="text-xs mt-1 text-gray-500">
-                  {stepNum === 1 && "Basics"}
-                  {stepNum === 2 && "Location"}
-                  {stepNum === 3 && "Pricing"}
-                  {stepNum === 4 && "Services"}
-                  {stepNum === 5 && "Image"}
-                  {stepNum === 6 && "Review"}
+                <span
+                  className={`text-sm mt-2 font-medium transition-all duration-300 ${isActive ? "text-slate-800 scale-105" : isCompleted ? "text-emerald-600" : "text-slate-500"
+                    }`}
+                >
+                  {step.title}
                 </span>
+
+                {/* Connecting line */}
+                {step.number < totalSteps && (
+                  <div className="absolute top-6 left-full w-full h-0.5 bg-slate-200 -z-10">
+                    <div
+                      className={`absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500 ${isCompleted ? "w-full" : "w-0"
+                        }`}
+                    ></div>
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <form onSubmit={(e) => e.preventDefault()}>
+        {/* Form Container */}
+        <div className="mb-8">
+          <form onSubmit={handleSubmit}>
             {renderStep()}
 
-            <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-10 pt-6 border-t border-slate-200">
               {currentStep > 1 ? (
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  className="px-6 py-3 bg-white border-2 border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shadow-sm flex items-center"
                 >
-                  <div className="flex items-center">
-                    <ChevronLeft className="h-5 w-5 mr-1" />
-                    Previous
-                  </div>
+                  <ChevronLeft className="h-5 w-5 mr-2" />
+                  Previous Step
                 </button>
               ) : (
                 <div></div> // Empty div to maintain flex spacing
@@ -1210,30 +1210,47 @@ const AddVenue = () => {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  className={`px-6 py-3 rounded-xl text-white transition-all duration-300 shadow-md hover:shadow-lg flex items-center ${currentStepData.color}`}
                 >
-                  <div className="flex items-center">
-                    Next
-                    <ChevronRight className="h-5 w-5 ml-1" />
-                  </div>
+                  Continue
+                  <ChevronRight className="h-5 w-5 ml-2" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl text-white transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center">
-                      <Loader className="animate-spin h-5 w-5 mr-2" />
-                      Submitting...
-                    </div>
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Creating Venue...
+                    </>
                   ) : (
-                    <div className="flex items-center">
-                      <Building className="h-5 w-5 mr-2" />
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
                       Create Venue
-                    </div>
+                    </>
                   )}
                 </button>
               )}

@@ -23,7 +23,7 @@ import FavoritesPage from "./components/User/Favourites";
 import UserSettingsPage from "./components/User/UserSettings";
 import NotFound from "./pages/common/NotFound";
 import ProtectedRoute from "./middleware/ProtectedRoute";
-import {Toaster} from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import PaymentFailed from "./components/PaymentFailed";
 import PaymentSuccess from "./components/PaymentSuccess";
 import MyVenues from "./components/VenueOwner/MyVenues";
@@ -31,80 +31,81 @@ import EditVenue from "./components/VenueOwner/EditVenue";
 import VenueDetails from "./components/VenueOwner/VenueDetails";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import AdminLogin from "./components/admin/Login";
+import ProtectedAdmin from "./middleware/ProtectedAdmin"
 function App() {
 
 
   return (
     <>
       <Toaster position="top-right" />
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<LandingPage />} />
-            <Route path="Venues" element={<VenuesPage />} />
-            <Route path="How-it-works" element={<HowItWorksPage />} />
-            <Route path="Contact" element={<ContactPage />} />
-            <Route path="Login" element={<LoginPage />} />
-            <Route path="SignUp" element={<SignUpPage />} />
-          </Route>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="Venues" element={<VenuesPage />} />
+          <Route path="How-it-works" element={<HowItWorksPage />} />
+          <Route path="Contact" element={<ContactPage />} />
+          <Route path="Login" element={<LoginPage />} />
+          <Route path="SignUp" element={<SignUpPage />} />
+        </Route>
 
-          <Route path="venue/:id" element={<VenueDetailsPage />} />
-
-
-          {/* Email Verification Routes */}
-          <Route
-            path="/forgot-password"
-            element={<EmailVerificationPage />}
-            />
-          <Route path="/reset-password/:token" element={<ResetPassword/>}/>
-          <Route path="/OTPVerification" element={<OTPVerificationPage />} />
-
-          {/* Authenticated User Routes */}
-          <Route
-            path="/Home"
-            element={
-              <ProtectedRoute>
-                <User_Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<HomePage />} />
-            <Route path="my-bookings" element={<MyBookingsPage />} />
-            <Route path="favorites" element={<FavoritesPage />} />
-            <Route path="settings" element={<UserSettingsPage />} />
-            <Route path="venue/:venueId/book-now" element={<BookNowPage />} />
-            <Route path="venue/payment-success" element={<PaymentSuccess />} />
-            <Route path="venue/payment-failure" element={<PaymentFailed />} /> 
-          </Route>
-
-          {/* Protected Vendor (VenueOwner) Routes */}
-          <Route
-            path="/Dashboard"
-            element={
-              <ProtectedRoute>
-                <VendorLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<VendorDashboard />} />
-            <Route path="add-venue" element={<AddNewVenue />} />
-            <Route path="bookings" element={<ManageBookings />} />
-            <Route path="help&support" element={<VenueOwnerSupport />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="my-venues" element={<MyVenues />} />
-            <Route path="edit-venue/:id" element={<EditVenue/>} />
-            <Route path="my-venues/:id" element={<VenueDetails/>} />
-
-          </Route>
-
-          <Route path="/admin">
-            <Route index element={<AdminLogin />} />
-          </Route>
+        <Route path="venue/:id" element={<VenueDetailsPage />} />
 
 
-          {/* 404 Page */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        {/* Email Verification Routes */}
+        <Route
+          path="/forgot-password"
+          element={<EmailVerificationPage />}
+        />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/OTPVerification" element={<OTPVerificationPage />} />
+
+        {/* Authenticated User Routes */}
+        <Route
+          path="/Home"
+          element={
+            <ProtectedRoute>
+              <User_Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<HomePage />} />
+          <Route path="my-bookings" element={<MyBookingsPage />} />
+          <Route path="favorites" element={<FavoritesPage />} />
+          <Route path="settings" element={<UserSettingsPage />} />
+          <Route path="venue/:venueId/book-now" element={<BookNowPage />} />
+          <Route path="venue/payment-success" element={<PaymentSuccess />} />
+          <Route path="venue/payment-failure" element={<PaymentFailed />} />
+        </Route>
+
+        {/* Protected Vendor (VenueOwner) Routes */}
+        <Route
+          path="/Dashboard"
+          element={
+            <ProtectedAdmin>
+              <VendorLayout />
+            </ProtectedAdmin>
+          }
+        >
+          <Route index element={<VendorDashboard />} />
+          <Route path="add-venue" element={<AddNewVenue />} />
+          <Route path="bookings" element={<ManageBookings />} />
+          <Route path="help&support" element={<VenueOwnerSupport />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="my-venues" element={<MyVenues />} />
+          <Route path="edit-venue/:id" element={<EditVenue />} />
+          <Route path="my-venues/:id" element={<VenueDetails />} />
+
+        </Route>
+
+        <Route path="/admin">
+          <Route index element={<AdminLogin />} />
+        </Route>
+
+
+        {/* 404 Page */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </>
   );
 }

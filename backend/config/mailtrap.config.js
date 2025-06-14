@@ -32,9 +32,9 @@
 //       console.error("Error sending email:", error);
 //     }
 //   };
-  
+
 //   sendEmail();
-  
+
 
 
 
@@ -42,12 +42,12 @@
 import { createTransport } from "nodemailer";
 import { MailtrapTransport } from "mailtrap";
 
-const TOKEN = "7ce1a92048f9b92b37aa7df91be0a5e1";
+const TOKEN = "e79dac4f09d8f03eed7658a7196e31e9";
 
 export const transport = createTransport(
   MailtrapTransport({
     token: TOKEN,
-    testInboxId: 3647755,
+    testInboxId: 3647756,
   })
 );
 
@@ -61,7 +61,7 @@ export const sender = {
 // import nodemailer from "nodemailer"; // Use this instead of just createTransport
 
 // export const transport = nodemailer.createTransport({
-//   host: "live.smtp.mailtrap.io",     
+//   host: "live.smtp.mailtrap.io",
 //   port: 587,
 //   auth: {
 //     user: process.env.MAILTRAP_USER, // "api" is correct when using token

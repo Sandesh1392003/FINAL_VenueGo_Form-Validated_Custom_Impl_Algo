@@ -8,7 +8,6 @@ import {
   CheckCircle,
   Search,
   X,
-  Bell,
   CheckSquare,
   XCircle,
   CalendarClock,
@@ -19,8 +18,13 @@ import {
   Phone,
   ExternalLink,
   Users,
-  Sliders,
   LayoutDashboard,
+  ChevronDown,
+  Filter,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  DollarSign,
 } from "lucide-react"
 import { AuthContext } from "../../middleware/AuthContext"
 import Loader from "../../pages/common/Loader"
@@ -40,6 +44,8 @@ const ManageBookings = () => {
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState("grid") // grid or list
+  const [currentPage, setCurrentPage] = useState(1)
+  const [bookingsPerPage] = useState(10)
 
   const { data, loading: venueLoading, error, refetch } = useQuery(MY_VENUES)
 
@@ -210,16 +216,16 @@ const ManageBookings = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case "APPROVED":
-        return "bg-emerald-50 text-emerald-700 border border-emerald-200"
+        return "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
       case "PENDING":
-        return "bg-amber-50 text-amber-700 border border-amber-200"
+        return "bg-gradient-to-r from-amber-500 to-amber-600 text-white"
       case "COMPLETED":
-        return "bg-blue-50 text-blue-700 border border-blue-200"
+        return "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
       case "CANCELLED":
       case "REJECTED":
-        return "bg-rose-50 text-rose-700 border border-rose-200"
+        return "bg-gradient-to-r from-rose-500 to-rose-600 text-white"
       default:
-        return "bg-gray-50 text-gray-700 border border-gray-200"
+        return "bg-gradient-to-r from-slate-500 to-slate-600 text-white"
     }
   }
 
@@ -227,13 +233,13 @@ const ManageBookings = () => {
   const getPaymentBadge = (status) => {
     switch (status) {
       case "PAID":
-        return "bg-emerald-50 text-emerald-700 border border-emerald-200"
+        return "bg-emerald-100 text-emerald-700 border border-emerald-200"
       case "PENDING":
-        return "bg-amber-50 text-amber-700 border border-amber-200"
+        return "bg-amber-100 text-amber-700 border border-amber-200"
       case "REFUNDED":
-        return "bg-blue-50 text-blue-700 border border-blue-200"
+        return "bg-blue-100 text-blue-700 border border-blue-200"
       default:
-        return "bg-gray-50 text-gray-700 border border-gray-200"
+        return "bg-slate-100 text-slate-700 border border-slate-200"
     }
   }
 
@@ -291,10 +297,18 @@ const ManageBookings = () => {
     toast.success("Bookings exported successfully")
   }
 
-  if (authLoading || venueLoading) return <Loader />
-  if (error) return <div className="text-red-500">Error: {error.message}</div>
-
+  // Pagination
   const filteredBookings = getFilteredBookings()
+  const indexOfLastBooking = currentPage * bookingsPerPage
+  const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage
+  const currentBookings = filteredBookings.slice(indexOfFirstBooking, indexOfLastBooking)
+  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage)
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+
+  if (authLoading || venueLoading) return <Loader />
+  if (error) return <div className="text-purple-500">Error: {error.message}</div>
+
   const totalBookings = Object.values(bookings).flat().length
   const todayCount = bookings.today.length
   const upcomingCount = bookings.upcoming.length
@@ -302,209 +316,254 @@ const ManageBookings = () => {
   const cancelledCount = bookings.cancelled.length
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
+      <div className="max-w-full mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <LayoutDashboard className="h-6 w-6 text-gray-500" />
-              <h1 className="text-2xl font-bold text-gray-900">Booking Dashboard</h1>
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2.5 rounded-xl shadow-lg">
+                  <LayoutDashboard className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent">
+                    Booking Management
+                  </h1>
+                  <p className="text-slate-600 mt-1">Track and manage all your venue bookings in one place</p>
+                </div>
+              </div>
             </div>
-            <p className="text-gray-500 mt-1">Manage and track all your venue bookings</p>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={exportToCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
-            >
-              <Download className="w-4 h-4 text-gray-600" />
-              <span>Export</span>
-            </button>
-
-            <div className="relative">
+            <div className="flex flex-wrap items-center gap-3">
               <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+                onClick={exportToCSV}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-purple-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group"
               >
-                <Sliders className="w-4 h-4 text-gray-600" />
-                <span>Filters</span>
-                {(statusFilter !== "all" || selectedVenue !== "all") && (
-                  <span className="flex items-center justify-center bg-gray-900 text-white rounded-full w-5 h-5 text-xs">
-                    {(statusFilter !== "all" ? 1 : 0) + (selectedVenue !== "all" ? 1 : 0)}
-                  </span>
+                <Download className="w-4 h-4 text-purple-600 group-hover:text-purple-700 transition-colors" />
+                <span className="text-sm font-medium">Export CSV</span>
+              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-purple-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group"
+                >
+                  <Filter className="w-4 h-4 text-purple-600 group-hover:text-purple-700 transition-colors" />
+                  <span className="text-sm font-medium">Filters</span>
+                  {(statusFilter !== "all" || selectedVenue !== "all") && (
+                    <span className="flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full w-5 h-5 text-xs">
+                      {(statusFilter !== "all" ? 1 : 0) + (selectedVenue !== "all" ? 1 : 0)}
+                    </span>
+                  )}
+                </button>
+
+                {isFilterOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl p-5 z-10 border border-purple-100">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-semibold text-slate-900">Filter Bookings</h3>
+                      <button
+                        onClick={() => {
+                          setStatusFilter("all")
+                          setSelectedVenue("all")
+                          setIsFilterOpen(false)
+                        }}
+                        className="text-xs text-purple-600 hover:text-purple-700 font-medium"
+                      >
+                        Reset all
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Venue</label>
+                        <div className="relative">
+                          <select
+                            value={selectedVenue}
+                            onChange={(e) => setSelectedVenue(e.target.value)}
+                            className="w-full p-2.5 pr-10 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none bg-white"
+                          >
+                            <option value="all">All Venues</option>
+                            {venues.map((venue) => (
+                              <option key={venue.id} value={venue.id}>
+                                {venue.name}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-600 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+                        <div className="relative">
+                          <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full p-2.5 pr-10 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 appearance-none bg-white"
+                          >
+                            <option value="all">All Statuses</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                          </select>
+                          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-600 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setIsFilterOpen(false)}
+                        className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 font-medium"
+                      >
+                        Apply Filters
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </button>
+              </div>
 
-              {isFilterOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg p-4 z-10 border border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-medium text-gray-900">Filters</h3>
-                    <button
-                      onClick={() => {
-                        setStatusFilter("all")
-                        setSelectedVenue("all")
-                        setIsFilterOpen(false)
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-700"
-                    >
-                      Reset all
-                    </button>
+              <div className="flex border border-purple-200 rounded-xl overflow-hidden shadow-sm">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2.5 ${viewMode === "grid"
+                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                      : "bg-white text-slate-500 hover:bg-purple-50"
+                    } transition-all duration-300`}
+                >
+                  <div className="grid grid-cols-2 gap-0.5">
+                    <div className="w-2 h-2 bg-current rounded-sm"></div>
+                    <div className="w-2 h-2 bg-current rounded-sm"></div>
+                    <div className="w-2 h-2 bg-current rounded-sm"></div>
+                    <div className="w-2 h-2 bg-current rounded-sm"></div>
                   </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Venue</label>
-                      <select
-                        value={selectedVenue}
-                        onChange={(e) => setSelectedVenue(e.target.value)}
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-                      >
-                        <option value="all">All Venues</option>
-                        {venues.map((venue) => (
-                          <option key={venue.id} value={venue.id}>
-                            {venue.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-                      >
-                        <option value="all">All Statuses</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="CANCELLED">Cancelled</option>
-                      </select>
-                    </div>
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2.5 ${viewMode === "list"
+                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                      : "bg-white text-slate-500 hover:bg-purple-50"
+                    } transition-all duration-300`}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <div className="w-4 h-1 bg-current rounded-sm"></div>
+                    <div className="w-4 h-1 bg-current rounded-sm"></div>
+                    <div className="w-4 h-1 bg-current rounded-sm"></div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 ${
-                  viewMode === "grid" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-500 hover:bg-gray-50"
-                }`}
-              >
-                <div className="grid grid-cols-2 gap-0.5">
-                  <div className="w-2 h-2 bg-current rounded-sm"></div>
-                  <div className="w-2 h-2 bg-current rounded-sm"></div>
-                  <div className="w-2 h-2 bg-current rounded-sm"></div>
-                  <div className="w-2 h-2 bg-current rounded-sm"></div>
-                </div>
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 ${
-                  viewMode === "list" ? "bg-gray-100 text-gray-900" : "bg-white text-gray-500 hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex flex-col gap-0.5">
-                  <div className="w-4 h-1 bg-current rounded-sm"></div>
-                  <div className="w-4 h-1 bg-current rounded-sm"></div>
-                  <div className="w-4 h-1 bg-current rounded-sm"></div>
-                </div>
-              </button>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Search */}
         <div className="relative mb-6">
-          <input
-            type="text"
-            placeholder="Search bookings by customer, venue, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search bookings by customer, venue, or location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-12 py-3.5 border-2 border-purple-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+              />
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <Search className="h-5 w-5 text-purple-600" />
+              </div>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-700 transition-all duration-300"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div
-            className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${
-              selectedTab === "upcoming" ? "border-gray-900" : "border-transparent"
-            } cursor-pointer hover:shadow-md transition-all`}
             onClick={() => setSelectedTab("upcoming")}
+            className={`relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105 ${selectedTab === "upcoming" ? "ring-2 ring-purple-500" : ""
+              }`}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Upcoming</p>
-                <p className="text-3xl font-bold mt-1">{upcomingCount}</p>
-              </div>
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <CalendarClock className="w-6 h-6 text-gray-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-600 opacity-80"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-600 opacity-0 hover:opacity-90 transition-opacity duration-300"></div>
+            <div className="relative p-5 text-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium opacity-90">Upcoming</p>
+                  <p className="text-3xl font-bold mt-1">{upcomingCount}</p>
+                  <p className="text-xs mt-2 opacity-80">Future bookings</p>
+                </div>
+                <div className="p-2.5 bg-white bg-opacity-20 rounded-lg backdrop-blur-sm">
+                  <CalendarClock className="w-6 h-6" />
+                </div>
               </div>
             </div>
           </div>
 
           <div
-            className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${
-              selectedTab === "today" ? "border-gray-900" : "border-transparent"
-            } cursor-pointer hover:shadow-md transition-all`}
             onClick={() => setSelectedTab("today")}
+            className={`relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105 ${selectedTab === "today" ? "ring-2 ring-purple-500" : ""
+              }`}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Today</p>
-                <p className="text-3xl font-bold mt-1">{todayCount}</p>
-              </div>
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Calendar className="w-6 h-6 text-gray-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-80"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 hover:opacity-90 transition-opacity duration-300"></div>
+            <div className="relative p-5 text-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium opacity-90">Today</p>
+                  <p className="text-3xl font-bold mt-1">{todayCount}</p>
+                  <p className="text-xs mt-2 opacity-80">Today's schedule</p>
+                </div>
+                <div className="p-2.5 bg-white bg-opacity-20 rounded-lg backdrop-blur-sm">
+                  <Calendar className="w-6 h-6" />
+                </div>
               </div>
             </div>
           </div>
 
           <div
-            className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${
-              selectedTab === "past" ? "border-gray-900" : "border-transparent"
-            } cursor-pointer hover:shadow-md transition-all`}
             onClick={() => setSelectedTab("past")}
+            className={`relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105 ${selectedTab === "past" ? "ring-2 ring-purple-500" : ""
+              }`}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Completed</p>
-                <p className="text-3xl font-bold mt-1">{pastCount}</p>
-              </div>
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <CheckSquare className="w-6 h-6 text-gray-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-600 opacity-80"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-600 opacity-0 hover:opacity-90 transition-opacity duration-300"></div>
+            <div className="relative p-5 text-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium opacity-90">Completed</p>
+                  <p className="text-3xl font-bold mt-1">{pastCount}</p>
+                  <p className="text-xs mt-2 opacity-80">Past bookings</p>
+                </div>
+                <div className="p-2.5 bg-white bg-opacity-20 rounded-lg backdrop-blur-sm">
+                  <CheckSquare className="w-6 h-6" />
+                </div>
               </div>
             </div>
           </div>
 
           <div
-            className={`bg-white rounded-xl shadow-sm p-5 border-l-4 ${
-              selectedTab === "cancelled" ? "border-gray-900" : "border-transparent"
-            } cursor-pointer hover:shadow-md transition-all`}
             onClick={() => setSelectedTab("cancelled")}
+            className={`relative overflow-hidden rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105 ${selectedTab === "cancelled" ? "ring-2 ring-purple-500" : ""
+              }`}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Cancelled</p>
-                <p className="text-3xl font-bold mt-1">{cancelledCount}</p>
-              </div>
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <CalendarX className="w-6 h-6 text-gray-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-500 to-red-600 opacity-80"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-500 to-red-600 opacity-0 hover:opacity-90 transition-opacity duration-300"></div>
+            <div className="relative p-5 text-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium opacity-90">Cancelled</p>
+                  <p className="text-3xl font-bold mt-1">{cancelledCount}</p>
+                  <p className="text-xs mt-2 opacity-80">Cancelled bookings</p>
+                </div>
+                <div className="p-2.5 bg-white bg-opacity-20 rounded-lg backdrop-blur-sm">
+                  <CalendarX className="w-6 h-6" />
+                </div>
               </div>
             </div>
           </div>
@@ -513,91 +572,99 @@ const ManageBookings = () => {
         {/* Bookings List */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 capitalize">{selectedTab} Bookings</h2>
-            <div className="text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg">
+                {getTabIcon(selectedTab)}
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 capitalize">{selectedTab} Bookings</h2>
+            </div>
+            <div className="text-sm font-medium px-3 py-1 bg-purple-100 text-purple-800 rounded-full">
               {filteredBookings.length} booking{filteredBookings.length !== 1 ? "s" : ""}
             </div>
           </div>
 
           {filteredBookings.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-white rounded-xl shadow-md p-10 text-center border border-purple-100">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mb-4">
                 {getTabIcon(selectedTab)}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">No {selectedTab} bookings found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                {selectedTab === "upcoming" && "You don't have any upcoming bookings."}
+              <h3 className="text-lg font-medium text-slate-900 mb-2">No {selectedTab} bookings found</h3>
+              <p className="text-slate-600 max-w-md mx-auto">
+                {selectedTab === "upcoming" && "You don't have any upcoming bookings at the moment."}
                 {selectedTab === "today" && "You don't have any bookings scheduled for today."}
-                {selectedTab === "past" && "You don't have any past bookings."}
+                {selectedTab === "past" && "You don't have any past bookings in your history."}
                 {selectedTab === "cancelled" && "You don't have any cancelled bookings."}
               </p>
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredBookings.map((booking) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {currentBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                  className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-102"
                   onClick={() => {
                     setSelectedBooking(booking)
                     setIsDetailsModalOpen(true)
                   }}
                 >
-                  <div className="relative h-32 bg-gray-100">
+                  <div className="relative h-40 bg-slate-100 overflow-hidden">
                     {booking.venueImage ? (
                       <img
                         src={booking.venueImage || "/placeholder.svg"}
                         alt={booking.venueName}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <MapPin className="w-8 h-8 text-gray-400" />
+                        <MapPin className="w-10 h-10 text-slate-400" />
                       </div>
                     )}
-                    <div className="absolute top-3 right-3 flex gap-1">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute top-3 right-3">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${getStatusBadge(booking.bookingStatus)}`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium shadow-md ${getStatusBadge(booking.bookingStatus)}`}
                       >
                         {booking.bookingStatus}
                       </span>
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded-md backdrop-blur-sm">
+                          {formatDate(booking.date)}
+                        </span>
+                        <span className="text-xs font-medium text-white bg-black/50 px-2 py-1 rounded-md backdrop-blur-sm">
+                          {booking.timeslots[0]?.start}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium text-gray-900 line-clamp-1">{booking.venueName}</h3>
-                      <span className="text-sm font-medium">Rs. {booking.totalPrice}</span>
+                      <h3 className="font-semibold text-slate-900 line-clamp-1">{booking.venueName}</h3>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5 text-purple-600" />
+                        <span className="text-sm font-bold text-purple-700">{booking.totalPrice}</span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center text-sm text-gray-500 mb-3">
-                      <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
+                    <div className="flex items-center text-xs text-slate-600 mb-3">
+                      <MapPin className="w-3.5 h-3.5 mr-1 flex-shrink-0 text-purple-600" />
                       <span className="truncate">
                         {booking.venueLocation?.city}, {booking.venueLocation?.province}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
-                        <span>{formatDate(booking.date)}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Clock className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
-                        <span>{booking.timeslots[0]?.start}</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                    <div className="flex items-center justify-between pt-3 border-t border-purple-100">
                       <div className="flex items-center">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                          <Users className="w-3.5 h-3.5 text-gray-500" />
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mr-2">
+                          <Users className="w-3.5 h-3.5 text-purple-600" />
                         </div>
-                        <span className="text-sm font-medium">{booking.user?.name || "N/A"}</span>
+                        <span className="text-xs font-medium text-slate-900">{booking.user?.name || "N/A"}</span>
                       </div>
 
                       {selectedTab === "upcoming" && (
-                        <div className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-md">
+                        <div className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-md">
                           In {getTimeRemaining(booking.date)}
                         </div>
                       )}
@@ -607,95 +674,102 @@ const ManageBookings = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl shadow-md overflow-hidden border border-purple-100">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-purple-100">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <tr className="bg-gradient-to-r from-purple-50 to-indigo-50">
+                      <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Venue & Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Amount
                       </th>
                       {selectedTab === "upcoming" && (
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                           Countdown
                         </th>
                       )}
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3.5 text-right text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredBookings.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50">
+                  <tbody className="divide-y divide-purple-100">
+                    {currentBookings.map((booking) => (
+                      <tr
+                        key={booking.id}
+                        className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 transition-colors duration-300"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="h-10 w-10 flex-shrink-0 mr-3">
+                            <div className="h-10 w-10 flex-shrink-0 mr-3 overflow-hidden rounded-lg">
                               {booking.venueImage ? (
                                 <img
                                   src={booking.venueImage || "/placeholder.svg"}
                                   alt={booking.venueName}
-                                  className="h-10 w-10 rounded-lg object-cover"
+                                  className="h-10 w-10 object-cover"
                                 />
                               ) : (
-                                <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                                  <MapPin className="h-5 w-5 text-gray-500" />
+                                <div className="h-10 w-10 bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                                  <MapPin className="h-5 w-5 text-purple-600" />
                                 </div>
                               )}
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900">{booking.venueName}</div>
-                              <div className="text-sm text-gray-500 flex items-center">
-                                <Calendar className="w-3.5 h-3.5 mr-1" />
+                              <div className="font-medium text-slate-900">{booking.venueName}</div>
+                              <div className="text-xs text-slate-600 flex items-center mt-0.5">
+                                <Calendar className="w-3.5 h-3.5 mr-1 text-purple-600" />
                                 {formatDate(booking.date)} • {booking.timeslots[0]?.start}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{booking.user?.name || "N/A"}</div>
-                          <div className="text-sm text-gray-500">{booking.user?.email || "No email"}</div>
+                          <div className="text-sm font-medium text-slate-900">{booking.user?.name || "N/A"}</div>
+                          <div className="text-xs text-slate-600">{booking.user?.email || "No email"}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <span
-                              className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-md ${getStatusBadge(booking.bookingStatus)}`}
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-medium rounded-full shadow-sm ${getStatusBadge(booking.bookingStatus)}`}
                             >
                               {booking.bookingStatus}
                             </span>
                             <span
-                              className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-md ${getPaymentBadge(booking.paymentStatus)}`}
+                              className={`px-2 py-0.5 inline-flex text-xs leading-5 font-medium rounded-md ${getPaymentBadge(booking.paymentStatus)}`}
                             >
                               {booking.paymentStatus}
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">Rs. {booking.totalPrice}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-bold text-purple-700">Rs. {booking.totalPrice}</div>
+                        </td>
                         {selectedTab === "upcoming" && (
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <Clock className="w-4 h-4 text-gray-500 mr-1" />
-                              <span className="text-sm">{getTimeRemaining(booking.date)}</span>
+                              <Clock className="w-4 h-4 text-purple-600 mr-1.5" />
+                              <span className="text-xs font-medium bg-purple-100 text-purple-800 px-2 py-1 rounded-md">
+                                {getTimeRemaining(booking.date)}
+                              </span>
                             </div>
                           </td>
                         )}
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               setSelectedBooking(booking)
                               setIsDetailsModalOpen(true)
                             }}
-                            className="text-gray-900 hover:text-gray-700 font-medium"
+                            className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-medium rounded-md hover:shadow-md transition-all duration-300"
                           >
                             View Details
                           </button>
@@ -707,30 +781,105 @@ const ManageBookings = () => {
               </div>
             </div>
           )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-6">
+              <nav className="flex items-center space-x-2">
+                <button
+                  onClick={() => paginate(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded-md bg-white border border-purple-200 text-slate-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+
+                {[...Array(totalPages)].map((_, index) => {
+                  const pageNumber = index + 1
+                  // Show first page, last page, current page, and one page before and after current page
+                  if (
+                    pageNumber === 1 ||
+                    pageNumber === totalPages ||
+                    (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => paginate(pageNumber)}
+                        className={`px-3 py-1.5 rounded-md ${currentPage === pageNumber
+                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                            : "bg-white border border-purple-200 text-slate-700 hover:bg-purple-50"
+                          } transition-colors duration-300`}
+                      >
+                        {pageNumber}
+                      </button>
+                    )
+                  } else if (
+                    (pageNumber === 2 && currentPage > 3) ||
+                    (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
+                  ) {
+                    return (
+                      <span key={pageNumber} className="px-3 py-1.5">
+                        ...
+                      </span>
+                    )
+                  }
+                  return null
+                })}
+
+                <button
+                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded-md bg-white border border-purple-200 text-slate-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </nav>
+            </div>
+          )}
+        </div>
+
+        {/* Info Alert */}
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200 shadow-sm">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-slate-900">Pro Tip</h3>
+              <p className="text-sm text-slate-700 mt-1">
+                Bookings are automatically approved when payment is received. You can also manually approve or cancel
+                bookings as needed. Export your booking data to CSV for your records or reporting.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Booking Details Modal */}
         {isDetailsModalOpen && selectedBooking && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div
+              className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-purple-100 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-900">Booking Details</h3>
                 <button
                   onClick={() => {
                     setIsDetailsModalOpen(false)
                     setSelectedBooking(null)
                   }}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-slate-400 hover:text-slate-600 transition-colors duration-300"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="p-6">
                 <div className="flex flex-col md:flex-row gap-6 mb-6">
                   {/* Venue Image */}
-                  <div className="w-full md:w-1/3">
-                    <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                  <div className="w-full md:w-2/5">
+                    <div className="aspect-video rounded-xl overflow-hidden bg-slate-100 shadow-md">
                       {selectedBooking.venueImage ? (
                         <img
                           src={selectedBooking.venueImage || "/placeholder.svg"}
@@ -739,60 +888,66 @@ const ManageBookings = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <MapPin className="w-12 h-12 text-gray-400" />
+                          <MapPin className="w-12 h-12 text-slate-400" />
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Booking Summary */}
-                  <div className="w-full md:w-2/3">
-                    <h4 className="text-xl font-semibold text-gray-900 mb-2">{selectedBooking.venueName}</h4>
-                    <p className="text-gray-500 flex items-center mb-4">
-                      <MapPin className="w-4 h-4 mr-1" />
+                  <div className="w-full md:w-3/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="text-xl font-bold text-slate-900">{selectedBooking.venueName}</h4>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadge(selectedBooking.bookingStatus)}`}
+                      >
+                        {selectedBooking.bookingStatus}
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 flex items-center mb-4 text-sm">
+                      <MapPin className="w-4 h-4 mr-1.5 text-purple-600" />
                       {selectedBooking.venueLocation?.city}, {selectedBooking.venueLocation?.province}
                     </p>
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Date</p>
-                        <p className="font-medium">{formatDate(selectedBooking.date)}</p>
+                      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-xl">
+                        <p className="text-xs text-slate-600 mb-1">Date</p>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 text-purple-600 mr-1.5" />
+                          <p className="font-medium text-slate-900">{formatDate(selectedBooking.date)}</p>
+                        </div>
                       </div>
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Time</p>
-                        <p className="font-medium">
-                          {selectedBooking.timeslots[0]?.start} - {selectedBooking.timeslots[0]?.end}
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Booking Status</p>
-                        <p
-                          className={`inline-flex px-2 py-1 rounded-md text-xs font-medium ${getStatusBadge(selectedBooking.bookingStatus)}`}
-                        >
-                          {selectedBooking.bookingStatus}
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Payment Status</p>
-                        <p
-                          className={`inline-flex px-2 py-1 rounded-md text-xs font-medium ${getPaymentBadge(selectedBooking.paymentStatus)}`}
-                        >
-                          {selectedBooking.paymentStatus}
-                        </p>
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-xl">
+                        <p className="text-xs text-slate-600 mb-1">Time</p>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 text-indigo-600 mr-1.5" />
+                          <p className="font-medium text-slate-900">
+                            {selectedBooking.timeslots[0]?.start} - {selectedBooking.timeslots[0]?.end}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                    <div className="bg-gradient-to-r from-purple-100 to-indigo-100 p-4 rounded-xl mb-4">
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-500">Total Amount</p>
-                        <p className="text-xl font-bold">Rs. {selectedBooking.totalPrice}</p>
+                        <p className="text-sm font-medium text-slate-700">Total Amount</p>
+                        <p className="text-xl font-bold text-slate-900">Rs. {selectedBooking.totalPrice}</p>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <p className="text-xs text-slate-600">Payment Status</p>
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-xs font-medium ${getPaymentBadge(selectedBooking.paymentStatus)}`}
+                        >
+                          {selectedBooking.paymentStatus}
+                        </span>
                       </div>
                     </div>
 
                     {selectedTab === "upcoming" && (
-                      <div className="flex items-center text-sm text-gray-500 mb-4">
-                        <Clock className="w-4 h-4 mr-1 text-gray-500" />
-                        <span>Coming up in {getTimeRemaining(selectedBooking.date)}</span>
+                      <div className="flex items-center text-sm text-purple-700 mb-4 bg-purple-50 p-2 rounded-lg">
+                        <Clock className="w-4 h-4 mr-2 text-purple-600" />
+                        <span className="font-medium">Coming up in {getTimeRemaining(selectedBooking.date)}</span>
                       </div>
                     )}
                   </div>
@@ -800,32 +955,41 @@ const ManageBookings = () => {
 
                 {/* Customer Information */}
                 <div className="mb-6">
-                  <h4 className="font-medium text-gray-900 mb-3">Customer Information</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-slate-900 mb-3 flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-purple-600" />
+                    Customer Information
+                  </h4>
+                  <div className="bg-gradient-to-r from-slate-50 to-purple-50 p-4 rounded-xl border border-purple-100">
                     <div className="flex flex-col md:flex-row md:items-center justify-between">
-                      <div className="space-y-2 mb-4 md:mb-0">
-                        <p className="font-medium">{selectedBooking.user?.name || "N/A"}</p>
-                        <p className="text-sm text-gray-500">{selectedBooking.user?.email || "No email"}</p>
-                        <p className="text-sm text-gray-500">{selectedBooking.user?.phone || "No phone"}</p>
+                      <div className="space-y-1 mb-4 md:mb-0">
+                        <p className="font-semibold text-slate-900">{selectedBooking.user?.name || "N/A"}</p>
+                        <p className="text-sm text-slate-600 flex items-center">
+                          <Mail className="w-3.5 h-3.5 mr-1.5 text-purple-600" />
+                          {selectedBooking.user?.email || "No email"}
+                        </p>
+                        <p className="text-sm text-slate-600 flex items-center">
+                          <Phone className="w-3.5 h-3.5 mr-1.5 text-purple-600" />
+                          {selectedBooking.user?.phone || "No phone"}
+                        </p>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <button
                           onClick={() => handleContactCustomer("email", selectedBooking.user?.email)}
                           disabled={!selectedBooking.user?.email}
-                          className="flex items-center gap-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1.5 px-3 py-2 text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Mail className="w-4 h-4" />
-                          Email
+                          Email Customer
                         </button>
 
                         <button
                           onClick={() => handleContactCustomer("phone", selectedBooking.user?.phone)}
                           disabled={!selectedBooking.user?.phone}
-                          className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1.5 px-3 py-2 text-sm border border-purple-200 rounded-lg hover:bg-purple-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Phone className="w-4 h-4" />
-                          Call
+                          <Phone className="w-4 h-4 text-purple-600" />
+                          Call Customer
                         </button>
                       </div>
                     </div>
@@ -835,13 +999,16 @@ const ManageBookings = () => {
                 {/* Additional Services */}
                 {selectedBooking.selectedServices && selectedBooking.selectedServices.length > 0 && (
                   <div className="mb-6">
-                    <h4 className="font-medium text-gray-900 mb-3">Additional Services</h4>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="space-y-2">
+                    <h4 className="font-semibold text-slate-900 mb-3 flex items-center">
+                      <Sparkles className="w-4 h-4 mr-2 text-purple-600" />
+                      Additional Services
+                    </h4>
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
+                      <div className="divide-y divide-purple-200">
                         {selectedBooking.selectedServices.map((service, index) => (
-                          <div key={index} className="flex justify-between text-sm">
-                            <span>{service.name}</span>
-                            <span>Rs. {service.price}</span>
+                          <div key={index} className="flex justify-between py-2 first:pt-0 last:pb-0">
+                            <span className="text-sm text-slate-900">{service.name}</span>
+                            <span className="font-medium text-purple-700">Rs. {service.price}</span>
                           </div>
                         ))}
                       </div>
@@ -850,32 +1017,32 @@ const ManageBookings = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-100">
+                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-purple-100">
                   <button
                     onClick={() => window.open(`/venue/${selectedBooking.venueId}`, "_blank")}
-                    className="flex items-center gap-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm border border-purple-200 rounded-lg hover:bg-purple-50 transition-all duration-300"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4 text-purple-600" />
                     View Venue
                   </button>
 
                   {selectedBooking.bookingStatus === "PENDING" && (
                     <button
                       onClick={() => handleStatusUpdate(selectedBooking.id, "APPROVED")}
-                      className="flex items-center gap-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                     >
                       <CheckCircle className="w-4 h-4" />
-                      Approve
+                      Approve Booking
                     </button>
                   )}
 
                   {(selectedBooking.bookingStatus === "PENDING" || selectedBooking.bookingStatus === "APPROVED") && (
                     <button
                       onClick={() => handleStatusUpdate(selectedBooking.id, "CANCELLED")}
-                      className="flex items-center gap-1 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                     >
                       <XCircle className="w-4 h-4" />
-                      Cancel
+                      Cancel Booking
                     </button>
                   )}
                 </div>
@@ -883,21 +1050,6 @@ const ManageBookings = () => {
             </div>
           </div>
         )}
-
-        {/* Info Alert */}
-        <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <Bell className="h-5 w-5 text-gray-500" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-gray-600">
-                Bookings are automatically approved when payment is received. You can also manually approve or cancel
-                bookings as needed.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )

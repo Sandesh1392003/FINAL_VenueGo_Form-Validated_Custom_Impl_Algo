@@ -53,7 +53,7 @@ export const ME_QUERY = gql`
 `;
 
 export const MY_VENUES = gql`
-  query MyVenues {
+  query myVenues {
     myVenues {
       id
       name
@@ -79,8 +79,6 @@ export const MY_VENUES = gql`
         totalPrice
         bookingStatus
         paymentStatus
-        additionalNotes
-        attendees
         user {
           name
           email

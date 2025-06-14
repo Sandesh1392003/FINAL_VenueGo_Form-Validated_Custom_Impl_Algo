@@ -88,9 +88,10 @@ const resolvers = {
         .populate("booking");
     },
     myVenues: async (_, __, { user }) => {
-      if (!user) {
-        throw new Error("Not Authenticated");
-      }
+      console.log(user)
+      // if (!user) {
+      //   throw new Error("Not Authenticated");
+      // }
       return Venue.find({ owner: user.id });
     },
     services: async () => {
@@ -935,6 +936,7 @@ const resolvers = {
         user.resetToken = undefined;
         user.resetTokenExpiresAt = undefined;
         user.expiresAt = undefined;
+        user.verified = true
         await user.save();
 
         // Generate a new token for the user (if you want to log them in immediately)

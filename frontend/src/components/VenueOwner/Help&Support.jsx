@@ -1,5 +1,7 @@
-import React, { useState } from "react"
-import { Mail, Phone, MessageCircle, ChevronDown, ChevronUp } from "lucide-react"
+"use client"
+
+import { useState } from "react"
+import { Mail, Phone, MessageCircle, ChevronDown, ChevronUp, HelpCircle, LifeBuoy, FileText, Clock } from "lucide-react"
 
 const VenueOwnerSupport = () => {
   const [openFaq, setOpenFaq] = useState(null)
@@ -52,128 +54,207 @@ const VenueOwnerSupport = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Here you would typically send the form data to your backend
     console.log("Form submitted:", formData)
-    // Reset form after submission
     setFormData({ name: "", email: "", subject: "", message: "" })
     alert("Your support ticket has been submitted. We will get back to you soon!")
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Help & Support for Venue Owners</h1>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-purple-50 py-10 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="max-w-5xl mx-auto mb-12">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-purple-600 p-2 rounded-lg">
+            <LifeBuoy className="h-6 w-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Help & Support for Venue Owners</h1>
+        </div>
+        <p className="text-slate-600 max-w-3xl">
+          Get the help you need to maximize your venue's potential. We're here to support your success every step of the
+          way.
+        </p>
+      </div>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg transition-all ease-in-out">
-              <button
-                className="flex justify-between items-center w-full p-4 text-left cursor-pointer"
-                onClick={() => toggleFaq(index)}
-              >
-                <span className="font-medium ">{faq.question}</span>
-                {openFaq === index ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
-                )}
-              </button>
-              {openFaq === index && (
-                <div className="p-4 bg-gray-50">
-                  <p>{faq.answer}</p>
-                </div>
-              )}
+      {/* Support Options */}
+      <div className="max-w-5xl mx-auto mb-12">
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Email Support */}
+          <div className="bg-white rounded-xl shadow-md border border-purple-100 p-6">
+            <div className="bg-purple-100 p-3 rounded-lg w-14 h-14 flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-purple-600" />
             </div>
-          ))}
-        </div>
-      </section>
+            <h3 className="font-semibold text-slate-900 mb-2">Email Support</h3>
+            <p className="text-slate-600 text-sm mb-3">Get detailed help via email</p>
+            <a
+              href="mailto:support@venuebooking.com"
+              className="text-purple-600 font-medium hover:text-purple-700 transition-colors"
+            >
+              support@venuebooking.com
+            </a>
+          </div>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="flex items-center">
-            <Mail className="w-6 h-6 mr-2 text-blue-500" />
-            <span>support@venuebooking.com</span>
+          {/* Phone Support */}
+          <div className="bg-white rounded-xl shadow-md border border-purple-100 p-6">
+            <div className="bg-purple-100 p-3 rounded-lg w-14 h-14 flex items-center justify-center mb-4">
+              <Phone className="h-6 w-6 text-purple-600" />
+            </div>
+            <h3 className="font-semibold text-slate-900 mb-2">Phone Support</h3>
+            <p className="text-slate-600 text-sm mb-3">Speak with our team directly</p>
+            <a href="tel:+15551234567" className="text-purple-600 font-medium hover:text-purple-700 transition-colors">
+              +1 (555) 123-4567
+            </a>
           </div>
-          <div className="flex items-center">
-            <Phone className="w-6 h-6 mr-2 text-blue-500" />
-            <span>+1 (555) 123-4567</span>
+
+          {/* Documentation */}
+          <div className="bg-white rounded-xl shadow-md border border-purple-100 p-6">
+            <div className="bg-purple-100 p-3 rounded-lg w-14 h-14 flex items-center justify-center mb-4">
+              <FileText className="h-6 w-6 text-purple-600" />
+            </div>
+            <h3 className="font-semibold text-slate-900 mb-2">Documentation</h3>
+            <p className="text-slate-600 text-sm mb-3">Browse our help guides</p>
+            <a href="#" className="text-purple-600 font-medium hover:text-purple-700 transition-colors">
+              View Documentation
+            </a>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Submit a Support Ticket</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block mb-1 font-medium">
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      {/* Support Hours Notice */}
+      <div className="max-w-5xl mx-auto mb-12">
+        <div className="bg-white rounded-xl shadow-md border border-purple-100 p-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-purple-100 p-3 rounded-lg">
+              <Clock className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900 mb-1">Support Hours</h3>
+              <p className="text-slate-600">Our support team is available Monday to Friday, 9 AM to 6 PM EST.</p>
+            </div>
           </div>
-          <div>
-            <label htmlFor="email" className="block mb-1 font-medium">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        </div>
+      </div>
+
+      {/* Two Column Layout */}
+      <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-10">
+        {/* FAQ Section */}
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-purple-100 p-2 rounded-lg">
+              <HelpCircle className="h-5 w-5 text-purple-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-slate-900">Frequently Asked Questions</h2>
           </div>
-          <div>
-            <label htmlFor="subject" className="block mb-1 font-medium">
-              Subject
-            </label>
-            <input
-              type="text"
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-md border border-purple-100">
+                <button
+                  className="flex justify-between items-center w-full p-4 text-left cursor-pointer"
+                  onClick={() => toggleFaq(index)}
+                >
+                  <span className="font-medium text-slate-900">{faq.question}</span>
+                  {openFaq === index ? (
+                    <ChevronUp className="w-5 h-5 text-purple-600" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-purple-600" />
+                  )}
+                </button>
+                {openFaq === index && (
+                  <div className="p-4 bg-purple-50 border-t border-purple-100 rounded-b-xl">
+                    <p className="text-slate-600">{faq.answer}</p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-          <div>
-            <label htmlFor="message" className="block mb-1 font-medium">
-              Message
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleInputChange}
-              required
-              rows="4"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
+        </div>
+
+        {/* Contact Form */}
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-purple-100 p-2 rounded-lg">
+              <MessageCircle className="h-5 w-5 text-purple-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-slate-900">Submit a Support Ticket</h2>
           </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            <MessageCircle className="w-5 h-5 inline-block mr-2" />
-            Submit Ticket
-          </button>
-        </form>
-      </section>
+
+          <div className="bg-white rounded-xl shadow-md border border-purple-100 p-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className="block mb-1 text-sm font-medium text-slate-700">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block mb-1 text-sm font-medium text-slate-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Your email"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="subject" className="block mb-1 text-sm font-medium text-slate-700">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Subject"
+                />
+              </div>
+              <div>
+                <label htmlFor="message" className="block mb-1 text-sm font-medium text-slate-700">
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  required
+                  rows="4"
+                  className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Describe your issue"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Submit Ticket
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
 export default VenueOwnerSupport
-

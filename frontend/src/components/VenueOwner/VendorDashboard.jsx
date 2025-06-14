@@ -228,7 +228,7 @@ const VendorDashboard = () => {
       case "CANCELLED":
         return "bg-rose-50 text-rose-700 border border-rose-200"
       default:
-        return "bg-gray-50 text-gray-700 border border-gray-200"
+        return "bg-slate-50 text-slate-700 border border-slate-200"
     }
   }
 
@@ -238,7 +238,7 @@ const VendorDashboard = () => {
   }
 
   // Colors for charts
-  const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"]
+  const COLORS = ["#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#6366f1", "#ec4899"]
   const STATUS_COLORS = {
     APPROVED: "#10b981",
     PENDING: "#f59e0b",
@@ -251,8 +251,8 @@ const VendorDashboard = () => {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md">
-          <p className="font-medium">{label}</p>
+        <div className="bg-white p-3 border border-purple-100 shadow-md rounded-lg">
+          <p className="font-medium text-slate-900">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {entry.value.toLocaleString()}
@@ -265,18 +265,21 @@ const VendorDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-purple-50">
       {/* Mobile menu */}
       <div
-        className={`fixed inset-0 z-50 bg-black bg-opacity-50 transition-opacity ${mobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-50 bg-slate-900 bg-opacity-50 transition-opacity duration-300 ${mobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       >
         <div
-          className={`fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`fixed inset-y-0 left-0 w-64 bg-white shadow-xl transform transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
-          <div className="p-4 border-b">
+          <div className="p-4 border-b border-purple-100">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">VenueGo</h2>
-              <button onClick={() => setMobileMenuOpen(false)} className="text-gray-500">
+              <h2 className="text-xl font-bold text-slate-900">VenueGo</h2>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-slate-500 hover:text-slate-700 transition-colors duration-300"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
@@ -284,41 +287,44 @@ const VendorDashboard = () => {
           <nav className="p-4">
             <ul className="space-y-2">
               <li>
-                <a href="/Dashboard" className="flex items-center p-2 rounded-lg text-gray-900 bg-gray-100">
-                  <LayoutDashboard className="h-5 w-5 mr-3" />
+                <a href="/Dashboard" className="flex items-center p-2 rounded-lg text-slate-900 bg-purple-50">
+                  <LayoutDashboard className="h-5 w-5 mr-3 text-purple-600" />
                   Dashboard
                 </a>
               </li>
               <li>
                 <a
                   href="/Dashboard/my-venues"
-                  className="flex items-center p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                  className="flex items-center p-2 rounded-lg text-slate-600 hover:bg-purple-50 transition-colors duration-300"
                 >
-                  <Building className="h-5 w-5 mr-3" />
+                  <Building className="h-5 w-5 mr-3 text-purple-600" />
                   My Venues
                 </a>
               </li>
               <li>
                 <a
                   href="/Dashboard/bookings"
-                  className="flex items-center p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                  className="flex items-center p-2 rounded-lg text-slate-600 hover:bg-purple-50 transition-colors duration-300"
                 >
-                  <Calendar className="h-5 w-5 mr-3" />
+                  <Calendar className="h-5 w-5 mr-3 text-purple-600" />
                   Bookings
                 </a>
               </li>
               <li>
                 <a
                   href="/Dashboard/settings"
-                  className="flex items-center p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                  className="flex items-center p-2 rounded-lg text-slate-600 hover:bg-purple-50 transition-colors duration-300"
                 >
-                  <Settings className="h-5 w-5 mr-3" />
+                  <Settings className="h-5 w-5 mr-3 text-purple-600" />
                   Settings
                 </a>
               </li>
-              <li className="pt-4 mt-4 border-t">
-                <a href="/logout" className="flex items-center p-2 rounded-lg text-gray-600 hover:bg-gray-100">
-                  <LogOut className="h-5 w-5 mr-3" />
+              <li className="pt-4 mt-4 border-t border-purple-100">
+                <a
+                  href="/logout"
+                  className="flex items-center p-2 rounded-lg text-slate-600 hover:bg-purple-50 transition-colors duration-300"
+                >
+                  <LogOut className="h-5 w-5 mr-3 text-purple-600" />
                   Logout
                 </a>
               </li>
@@ -330,23 +336,23 @@ const VendorDashboard = () => {
       {/* Main content */}
       <div className="flex flex-col">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="bg-white shadow-sm border-b border-purple-100 sticky top-0 z-10">
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16 items-center">
               <div className="flex items-center">
                 <button onClick={() => setMobileMenuOpen(true)} className="md:hidden mr-2">
-                  <Menu className="h-6 w-6 text-gray-500" />
+                  <Menu className="h-6 w-6 text-purple-600" />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900">Vendor Dashboard</h1>
+                <h1 className="text-xl font-bold text-slate-900">Vendor Dashboard</h1>
               </div>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <button className="p-1 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none">
+                  <button className="p-1 rounded-full text-purple-600 hover:text-purple-700 transition-colors duration-300 focus:outline-none">
                     <span className="sr-only">Notifications</span>
                     <div className="relative">
                       <Calendar className="h-6 w-6" />
                       {pendingBookings > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                           {pendingBookings}
                         </span>
                       )}
@@ -354,11 +360,11 @@ const VendorDashboard = () => {
                   </button>
                 </div>
                 <div className="flex items-center">
-                  <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-gray-600" />
+                  <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-purple-600" />
                   </div>
                   <div className="ml-2 hidden md:block">
-                    <p className="text-sm font-medium text-gray-700">Vendor Account</p>
+                    <p className="text-sm font-medium text-slate-700">Vendor Account</p>
                   </div>
                 </div>
               </div>
@@ -367,18 +373,18 @@ const VendorDashboard = () => {
         </header>
 
         <main className="flex-1">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Dashboard Header */}
-            <div className="mb-8">
+            <div className="mb-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Welcome back!</h2>
-                  <p className="mt-1 text-sm text-gray-500">Here's what's happening with your venues today.</p>
+                  <h2 className="text-2xl font-bold text-slate-900">Welcome back!</h2>
+                  <p className="mt-1 text-sm text-slate-600">Here's what's happening with your venues today.</p>
                 </div>
                 <div className="mt-4 md:mt-0 flex space-x-3">
                   <button
                     onClick={() => navigate("/Dashboard/my-venues/add")}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none"
+                    className="inline-flex items-center px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:shadow-lg hover:scale-105 transition-all duration-300"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add New Venue
@@ -388,104 +394,110 @@ const VendorDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                <div className="p-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-purple-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="p-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 p-3 rounded-lg bg-indigo-50">
-                      <Building className="h-6 w-6 text-indigo-600" />
+                    <div className="flex-shrink-0 p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                      <Building className="h-5 w-5 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
+                    <div className="ml-4 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Active Venues</dt>
-                        <dd className="text-3xl font-semibold text-gray-900">{venues.length}</dd>
+                        <dt className="text-xs font-medium text-slate-600 truncate">Active Venues</dt>
+                        <dd className="text-2xl font-semibold text-slate-900">{venues.length}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-5 py-2">
-                  <div className="text-sm">
+                <div className="bg-purple-50 px-4 py-2">
+                  <div className="text-xs">
                     <a
                       href="/Dashboard/my-venues"
-                      className="font-medium text-indigo-600 hover:text-indigo-500 flex items-center"
+                      className="font-medium text-purple-600 hover:text-purple-700 flex items-center transition-colors duration-300"
                     >
                       View all venues
-                      <ChevronRight className="ml-1 h-4 w-4" />
+                      <ChevronRight className="ml-1 h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                <div className="p-5">
+              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-purple-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="p-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 p-3 rounded-lg bg-emerald-50">
-                      <Calendar className="h-6 w-6 text-emerald-600" />
+                    <div className="flex-shrink-0 p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                      <Calendar className="h-5 w-5 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
+                    <div className="ml-4 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Bookings</dt>
-                        <dd className="text-3xl font-semibold text-gray-900">{totalBookings}</dd>
+                        <dt className="text-xs font-medium text-slate-600 truncate">Total Bookings</dt>
+                        <dd className="text-2xl font-semibold text-slate-900">{totalBookings}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-5 py-2">
-                  <div className="text-sm">
+                <div className="bg-purple-50 px-4 py-2">
+                  <div className="text-xs">
                     <a
                       href="/Dashboard/bookings"
-                      className="font-medium text-emerald-600 hover:text-emerald-500 flex items-center"
+                      className="font-medium text-purple-600 hover:text-purple-700 flex items-center transition-colors duration-300"
                     >
                       Manage bookings
-                      <ChevronRight className="ml-1 h-4 w-4" />
+                      <ChevronRight className="ml-1 h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                <div className="p-5">
+              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-purple-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="p-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 p-3 rounded-lg bg-amber-50">
-                      <Wallet className="h-6 w-6 text-amber-600" />
+                    <div className="flex-shrink-0 p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                      <Wallet className="h-5 w-5 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
+                    <div className="ml-4 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                        <dd className="text-3xl font-semibold text-gray-900">Rs. {totalRevenue.toLocaleString()}</dd>
+                        <dt className="text-xs font-medium text-slate-600 truncate">Total Revenue</dt>
+                        <dd className="text-2xl font-semibold text-slate-900">Rs. {totalRevenue.toLocaleString()}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-5 py-2">
-                  <div className="text-sm">
-                    <a href="#" className="font-medium text-amber-600 hover:text-amber-500 flex items-center">
+                <div className="bg-purple-50 px-4 py-2">
+                  <div className="text-xs">
+                    <a
+                      href="#"
+                      className="font-medium text-purple-600 hover:text-purple-700 flex items-center transition-colors duration-300"
+                    >
                       View earnings
-                      <ChevronRight className="ml-1 h-4 w-4" />
+                      <ChevronRight className="ml-1 h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                <div className="p-5">
+              <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-purple-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="p-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 p-3 rounded-lg bg-rose-50">
-                      <Clock className="h-6 w-6 text-rose-600" />
+                    <div className="flex-shrink-0 p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                      <Clock className="h-5 w-5 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
+                    <div className="ml-4 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Avg. Price/hr</dt>
-                        <dd className="text-3xl font-semibold text-gray-900">Rs. {avgPricePerHour}</dd>
+                        <dt className="text-xs font-medium text-slate-600 truncate">Avg. Price/hr</dt>
+                        <dd className="text-2xl font-semibold text-slate-900">Rs. {avgPricePerHour}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-5 py-2">
-                  <div className="text-sm">
-                    <a href="#" className="font-medium text-rose-600 hover:text-rose-500 flex items-center">
+                <div className="bg-purple-50 px-4 py-2">
+                  <div className="text-xs">
+                    <a
+                      href="#"
+                      className="font-medium text-purple-600 hover:text-purple-700 flex items-center transition-colors duration-300"
+                    >
                       Price analysis
-                      <ChevronRight className="ml-1 h-4 w-4" />
+                      <ChevronRight className="ml-1 h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
@@ -493,40 +505,40 @@ const VendorDashboard = () => {
             </div>
 
             {/* Time Range Selector */}
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900">Analytics Overview</h3>
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-medium text-slate-900">Analytics Overview</h3>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">Time Range:</span>
+                <span className="text-xs text-slate-600">Time Range:</span>
                 <div className="relative">
                   <select
                     value={timeRange}
                     onChange={(e) => setTimeRange(e.target.value)}
-                    className="appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    className="appearance-none bg-white border border-purple-200 rounded-lg pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
                   >
                     <option value="1m">Last Month</option>
                     <option value="3m">Last 3 Months</option>
                     <option value="6m">Last 6 Months</option>
                     <option value="1y">Last Year</option>
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-purple-600 pointer-events-none" />
                 </div>
               </div>
             </div>
 
             {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {/* Revenue Trend */}
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-4">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100 hover:shadow-md transition-all duration-300">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-base font-medium text-gray-900">Revenue Trend</h3>
-                    <p className="text-sm text-gray-500">Monthly revenue over time</p>
+                    <h3 className="text-sm font-medium text-slate-900">Revenue Trend</h3>
+                    <p className="text-xs text-slate-600">Monthly revenue over time</p>
                   </div>
-                  <button className="p-1 text-gray-400 hover:text-gray-500">
-                    <MoreHorizontal className="h-5 w-5" />
+                  <button className="p-1 text-purple-600 hover:text-purple-700 transition-colors duration-300">
+                    <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="h-72">
+                <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={revenueData}
@@ -539,8 +551,8 @@ const VendorDashboard = () => {
                     >
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -551,7 +563,7 @@ const VendorDashboard = () => {
                         type="monotone"
                         dataKey="revenue"
                         name="Revenue (Rs.)"
-                        stroke="#6366f1"
+                        stroke="#8b5cf6"
                         fillOpacity={1}
                         fill="url(#colorRevenue)"
                       />
@@ -561,19 +573,19 @@ const VendorDashboard = () => {
               </div>
 
               {/* Booking Status */}
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-4">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100 hover:shadow-md transition-all duration-300">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-base font-medium text-gray-900">Booking Status</h3>
-                    <p className="text-sm text-gray-500">Distribution of booking statuses</p>
+                    <h3 className="text-sm font-medium text-slate-900">Booking Status</h3>
+                    <p className="text-xs text-slate-600">Distribution of booking statuses</p>
                   </div>
-                  <button className="p-1 text-gray-400 hover:text-gray-500">
-                    <MoreHorizontal className="h-5 w-5" />
+                  <button className="p-1 text-purple-600 hover:text-purple-700 transition-colors duration-300">
+                    <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="h-72 flex items-center justify-center">
+                <div className="h-64 flex items-center justify-center">
                   {bookingStatusData.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No booking data available</p>
+                    <p className="text-slate-600 text-xs">No booking data available</p>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -598,7 +610,7 @@ const VendorDashboard = () => {
                           layout="vertical"
                           verticalAlign="middle"
                           align="right"
-                          formatter={(value) => <span className="text-sm text-gray-700">{value}</span>}
+                          formatter={(value) => <span className="text-xs text-slate-700">{value}</span>}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -607,20 +619,20 @@ const VendorDashboard = () => {
               </div>
 
               {/* Venue Popularity */}
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-4">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100 hover:shadow-md transition-all duration-300">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-base font-medium text-gray-900">Venue Popularity</h3>
-                    <p className="text-sm text-gray-500">Number of bookings by venue</p>
+                    <h3 className="text-sm font-medium text-slate-900">Venue Popularity</h3>
+                    <p className="text-xs text-slate-600">Number of bookings by venue</p>
                   </div>
-                  <button className="p-1 text-gray-400 hover:text-gray-500">
-                    <MoreHorizontal className="h-5 w-5" />
+                  <button className="p-1 text-purple-600 hover:text-purple-700 transition-colors duration-300">
+                    <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="h-72">
+                <div className="h-64">
                   {venuePopularityData.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
-                      <p className="text-gray-500 text-sm">No venue data available</p>
+                      <p className="text-slate-600 text-xs">No venue data available</p>
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
@@ -638,7 +650,7 @@ const VendorDashboard = () => {
                         <XAxis type="number" axisLine={false} tickLine={false} />
                         <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="bookings" name="Bookings" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
+                        <Bar dataKey="bookings" name="Bookings" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={20} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -646,20 +658,20 @@ const VendorDashboard = () => {
               </div>
 
               {/* Service Offerings */}
-              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-4">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100 hover:shadow-md transition-all duration-300">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-base font-medium text-gray-900">Service Offerings</h3>
-                    <p className="text-sm text-gray-500">Distribution of services across venues</p>
+                    <h3 className="text-sm font-medium text-slate-900">Service Offerings</h3>
+                    <p className="text-xs text-slate-600">Distribution of services across venues</p>
                   </div>
-                  <button className="p-1 text-gray-400 hover:text-gray-500">
-                    <MoreHorizontal className="h-5 w-5" />
+                  <button className="p-1 text-purple-600 hover:text-purple-700 transition-colors duration-300">
+                    <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="h-72">
+                <div className="h-64">
                   {serviceUsageData.length === 0 ? (
                     <div className="h-full flex items-center justify-center">
-                      <p className="text-gray-500 text-sm">No service data available</p>
+                      <p className="text-slate-600 text-xs">No service data available</p>
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
@@ -692,33 +704,33 @@ const VendorDashboard = () => {
             </div>
 
             {/* Recent Activity Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Recent Bookings */}
-              <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                  <h3 className="font-medium text-gray-900">Recent Bookings</h3>
+              <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden hover:shadow-md transition-all duration-300">
+                <div className="px-4 py-3 border-b border-purple-100 flex justify-between items-center">
+                  <h3 className="font-medium text-slate-900 text-sm">Recent Bookings</h3>
                   <a
                     href="/Dashboard/bookings"
-                    className="text-sm text-indigo-600 hover:text-indigo-500 flex items-center"
+                    className="text-xs text-purple-600 hover:text-purple-700 flex items-center transition-colors duration-300"
                   >
-                    View all <ArrowRight className="ml-1 h-4 w-4" />
+                    View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </a>
                 </div>
                 <div>
                   {recentBookings.length === 0 ? (
-                    <div className="p-5 text-center">
-                      <p className="text-gray-500">No bookings yet</p>
+                    <div className="p-4 text-center">
+                      <p className="text-slate-600 text-sm">No bookings yet</p>
                     </div>
                   ) : (
-                    <ul className="divide-y divide-gray-100">
+                    <ul className="divide-y divide-purple-100">
                       {recentBookings.map((booking) => (
-                        <li key={booking.id} className="px-5 py-4 hover:bg-gray-50 transition-colors">
+                        <li key={booking.id} className="px-4 py-3 hover:bg-purple-50 transition-colors duration-300">
                           <div className="flex items-center justify-between">
-                            <div className="text-sm font-medium text-gray-900 truncate">{booking.venue}</div>
+                            <div className="text-xs font-medium text-slate-900 truncate">{booking.venue}</div>
                             <div className="ml-2 flex-shrink-0 flex items-center">
-                              <span className="text-sm text-gray-500 mr-3">{booking.amount}</span>
+                              <span className="text-xs text-slate-600 mr-2">{booking.amount}</span>
                               <span
-                                className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-md ${getStatusStyle(
+                                className={`px-2 py-0.5 inline-flex text-xs leading-5 font-medium rounded-md ${getStatusStyle(
                                   booking.status,
                                 )}`}
                               >
@@ -726,15 +738,15 @@ const VendorDashboard = () => {
                               </span>
                             </div>
                           </div>
-                          <div className="mt-2 sm:flex sm:justify-between">
+                          <div className="mt-1.5 sm:flex sm:justify-between">
                             <div className="sm:flex">
-                              <p className="flex items-center text-sm text-gray-500">
-                                <Users className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" aria-hidden="true" />
+                              <p className="flex items-center text-xs text-slate-600">
+                                <Users className="flex-shrink-0 mr-1 h-3.5 w-3.5 text-purple-600" aria-hidden="true" />
                                 {booking.user}
                               </p>
                             </div>
-                            <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                              <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" aria-hidden="true" />
+                            <div className="mt-1 flex items-center text-xs text-slate-600 sm:mt-0">
+                              <Calendar className="flex-shrink-0 mr-1 h-3.5 w-3.5 text-purple-600" aria-hidden="true" />
                               <p>
                                 {booking.date} • {booking.time}
                               </p>
@@ -748,45 +760,45 @@ const VendorDashboard = () => {
               </div>
 
               {/* My Venues */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                  <h3 className="font-medium text-gray-900">My Venues</h3>
+              <div className="bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden hover:shadow-md transition-all duration-300">
+                <div className="px-4 py-3 border-b border-purple-100 flex justify-between items-center">
+                  <h3 className="font-medium text-slate-900 text-sm">My Venues</h3>
                   <a
                     href="/Dashboard/my-venues"
-                    className="text-sm text-indigo-600 hover:text-indigo-500 flex items-center"
+                    className="text-xs text-purple-600 hover:text-purple-700 flex items-center transition-colors duration-300"
                   >
-                    View all <ArrowRight className="ml-1 h-4 w-4" />
+                    View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </a>
                 </div>
                 <div>
                   {venues.length === 0 ? (
-                    <div className="p-5 text-center">
-                      <p className="text-gray-500">No venues added yet</p>
+                    <div className="p-4 text-center">
+                      <p className="text-slate-600 text-sm">No venues added yet</p>
                       <button
                         onClick={() => navigate("/Dashboard/my-venues/add")}
-                        className="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                        className="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:shadow-lg hover:scale-105 transition-all duration-300"
                       >
                         <Plus className="h-3.5 w-3.5 mr-1" />
                         Add Venue
                       </button>
                     </div>
                   ) : (
-                    <ul className="divide-y divide-gray-100">
+                    <ul className="divide-y divide-purple-100">
                       {venues.slice(0, 5).map((venue) => (
                         <li
                           key={venue.id}
-                          className="px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="px-4 py-3 hover:bg-purple-50 transition-colors duration-300 cursor-pointer"
                           onClick={() => navigate(`/Dashboard/my-venues/${venue.id}`)}
                         >
                           <div className="flex items-center justify-between">
-                            <div className="text-sm font-medium text-gray-900 truncate">{venue.name}</div>
+                            <div className="text-xs font-medium text-slate-900 truncate">{venue.name}</div>
                             <div className="ml-2 flex-shrink-0">
-                              <span className="text-sm text-gray-500">Rs. {venue.basePricePerHour}/hr</span>
+                              <span className="text-xs text-slate-600">Rs. {venue.basePricePerHour}/hr</span>
                             </div>
                           </div>
-                          <div className="mt-2 flex justify-between items-center">
-                            <p className="flex items-center text-xs text-gray-500">
-                              <MapPin className="flex-shrink-0 mr-1 h-3.5 w-3.5 text-gray-400" aria-hidden="true" />
+                          <div className="mt-1.5 flex justify-between items-center">
+                            <p className="flex items-center text-xs text-slate-600">
+                              <MapPin className="flex-shrink-0 mr-1 h-3 w-3 text-purple-600" aria-hidden="true" />
                               {venue.location.city}, {venue.location.province}
                             </p>
                             <span
