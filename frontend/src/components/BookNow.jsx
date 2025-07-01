@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect, useContext, useMemo } from "react"
+
 import {
   Clock,
   MapPin,
   Users,
-  IndianRupee,
   AlertCircle,
   Check,
   Package,
@@ -19,6 +19,7 @@ import {
   CheckCircle,
   ArrowLeft,
 } from "lucide-react"
+
 import { useParams, useNavigate } from "react-router-dom"
 import { VENUE_BY_ID } from "./Graphql/query/venuesGql"
 import Loader from "../pages/common/Loader"
@@ -38,9 +39,12 @@ const DatePicker = ({ availableDates, selectedDate, onDateChange, minDate }) => 
   // Get first day of month (0 = Sunday, 1 = Monday, etc.)
   const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay()
 
-  // Format date as YYYY-MM-DD for comparison
+  // Format date as YYYY-MM-DD for comparison (FIXED TIMEZONE ISSUE)
   const formatDateString = (date) => {
-    return date.toISOString().split("T")[0]
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
   }
 
   // Check if a date is available
@@ -360,7 +364,7 @@ const ServiceCard = ({ service, isSelected, onToggle }) => {
           </div>
         </div>
         <div className="flex items-center mt-1 text-purple-600 font-semibold">
-          <IndianRupee className="h-4 w-4 mr-1" />
+          <span className="mr-1">Rs.</span>
           {service.servicePrice}
         </div>
         <div className="text-xs text-slate-500 mt-1">{service.category === "hourly" ? "Per hour" : "Fixed price"}</div>
@@ -410,6 +414,7 @@ const BookNowPage = () => {
     const bookings = venue.bookings || []
     const allTimeSlots = generateTimeSlots()
     const availableTimeSlotsByDate = {}
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
@@ -418,7 +423,11 @@ const BookNowPage = () => {
     for (let i = 0; i < 90; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
-      dates.push(date.toISOString().split("T")[0])
+      // FIXED TIMEZONE ISSUE - Use consistent date formatting
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, "0")
+      const day = String(date.getDate()).padStart(2, "0")
+      dates.push(`${year}-${month}-${day}`)
     }
 
     // Calculate available time slots for each date
@@ -442,6 +451,7 @@ const BookNowPage = () => {
     if (!bookingDetails.date || !availableTimeSlotsByDate[bookingDetails.date]) {
       return []
     }
+
     return availableTimeSlotsByDate[bookingDetails.date]
   }, [bookingDetails.date, availableTimeSlotsByDate])
 
@@ -479,6 +489,7 @@ const BookNowPage = () => {
   }, [bookingDetails.date])
 
   if (loading) return <Loader />
+
   if (error)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -488,6 +499,7 @@ const BookNowPage = () => {
         </div>
       </div>
     )
+
   if (!data?.venue)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -506,7 +518,6 @@ const BookNowPage = () => {
       ...prevDetails,
       [name]: value,
     }))
-
     // Clear errors when input changes
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -541,7 +552,6 @@ const BookNowPage = () => {
   const handleServiceToggle = (serviceId) => {
     setBookingDetails((prevDetails) => {
       const selectedServices = [...prevDetails.selectedServices]
-
       if (selectedServices.includes(serviceId)) {
         return {
           ...prevDetails,
@@ -564,8 +574,14 @@ const BookNowPage = () => {
     return (endTime - startTime) / (1000 * 60 * 60)
   }
 
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split("T")[0]
+  // Get today's date in YYYY-MM-DD format (FIXED TIMEZONE ISSUE)
+  const today = (() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, "0")
+    const day = String(now.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  })()
 
   // Check if current step is complete
   const isStepComplete = (step) => {
@@ -593,10 +609,13 @@ const BookNowPage = () => {
     }
   }
 
-  // Format date for display
+  // Format date for display (FIXED TIMEZONE ISSUE)
   const formatDate = (dateString) => {
     if (!dateString) return ""
-    return new Date(dateString).toLocaleDateString("en-US", {
+    // Parse the date string manually to avoid timezone issues
+    const [year, month, day] = dateString.split("-").map(Number)
+    const date = new Date(year, month - 1, day) // month is 0-indexed
+    return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -707,7 +726,7 @@ const BookNowPage = () => {
               </div>
             )}
 
-            {/* Step 3: Review & Pay */}
+            {/* Step 2: Review & Pay */}
             {activeStep === 2 && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">Review & Complete Booking</h2>
@@ -809,6 +828,7 @@ const BookNowPage = () => {
                           <span className="text-slate-600">Date:</span>
                           <span className="font-medium text-slate-900">{formatDate(bookingDetails.date)}</span>
                         </div>
+
                         <div className="flex justify-between items-center pb-4 border-b border-slate-200">
                           <span className="text-slate-600">Time:</span>
                           <span className="font-medium text-slate-900">
@@ -816,16 +836,18 @@ const BookNowPage = () => {
                             {formatTimeForDisplay(bookingDetails.endTime)}
                           </span>
                         </div>
+
                         <div className="flex justify-between items-center pb-4 border-b border-slate-200">
                           <span className="text-slate-600">Duration:</span>
                           <span className="font-medium text-slate-900">
                             {calculateDuration(bookingDetails.startTime, bookingDetails.endTime)} hours
                           </span>
                         </div>
+
                         <div className="flex justify-between items-center pb-4 border-b border-slate-200">
                           <span className="text-slate-600">Venue Rental:</span>
                           <div className="flex items-center font-medium text-slate-900">
-                            <IndianRupee className="w-4 h-4 mr-1" />
+                            <span className="mr-1">Rs.</span>
                             <span>
                               {calculateTotalPrice(
                                 bookingDetails.startTime,
@@ -856,7 +878,7 @@ const BookNowPage = () => {
                                       <span className="text-slate-700">{service.serviceId.name}</span>
                                     </div>
                                     <div className="flex items-center font-medium text-slate-900">
-                                      <IndianRupee className="w-3 h-3 mr-1" />
+                                      <span className="mr-1">Rs.</span>
                                       <span>{service.servicePrice}</span>
                                     </div>
                                   </div>
@@ -869,7 +891,7 @@ const BookNowPage = () => {
                         <div className="flex justify-between items-center pt-2">
                           <span className="text-lg font-semibold text-slate-900">Total Amount:</span>
                           <div className="flex items-center text-xl font-bold text-purple-700">
-                            <IndianRupee className="w-5 h-5 mr-1" />
+                            <span className="mr-1">Rs.</span>
                             <span>{totalPrice}</span>
                           </div>
                         </div>
@@ -937,6 +959,7 @@ const BookNowPage = () => {
               />
               <div className="p-6">
                 <h3 className="text-xl font-bold text-slate-900 mb-4">{venue.name}</h3>
+
                 <div className="space-y-3">
                   <div className="flex items-center text-slate-600">
                     <MapPin className="w-5 h-5 text-purple-600 mr-3" />
@@ -944,16 +967,19 @@ const BookNowPage = () => {
                       {venue.location.street}, {venue.location.city}, {venue.location.province}
                     </span>
                   </div>
+
                   <div className="flex items-center text-slate-600">
                     <Users className="w-5 h-5 text-purple-600 mr-3" />
                     <span>Capacity: {venue.capacity} guests</span>
                   </div>
+
                   <div className="flex items-center text-slate-600">
                     <Clock className="w-5 h-5 text-purple-600 mr-3" />
                     <span>
-                      <IndianRupee className="w-4 h-4 inline-block" /> {venue.basePricePerHour}/hour
+                      <span className="mr-1">Rs.</span> {venue.basePricePerHour}/hour
                     </span>
                   </div>
+
                   {venue.reviews && venue.reviews.length > 0 && (
                     <div className="flex items-center text-slate-600">
                       <Star className="w-5 h-5 text-yellow-400 fill-current mr-3" />
@@ -973,12 +999,14 @@ const BookNowPage = () => {
             {bookingDetails.startTime && bookingDetails.endTime && (
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Your Booking</h3>
+
                 {bookingDetails.date && (
                   <div className="flex items-center mb-3 text-slate-600">
                     <Calendar className="w-5 h-5 text-purple-600 mr-3" />
                     <span>{formatDate(bookingDetails.date)}</span>
                   </div>
                 )}
+
                 {bookingDetails.startTime && bookingDetails.endTime && (
                   <div className="flex items-center mb-3 text-slate-600">
                     <Clock className="w-5 h-5 text-purple-600 mr-3" />
@@ -987,6 +1015,7 @@ const BookNowPage = () => {
                     </span>
                   </div>
                 )}
+
                 {bookingDetails.selectedServices.length > 0 && (
                   <div className="flex items-start mb-3 text-slate-600">
                     <Package className="w-5 h-5 text-purple-600 mr-3 mt-1" />
@@ -996,6 +1025,7 @@ const BookNowPage = () => {
                         {bookingDetails.selectedServices.map((serviceId) => {
                           const service = venue.services.find((s) => s.serviceId.id === serviceId)
                           if (!service) return null
+
                           return (
                             <div key={serviceId} className="flex items-center text-sm">
                               <CheckCircle className="w-3 h-3 text-purple-600 mr-2" />
@@ -1007,21 +1037,23 @@ const BookNowPage = () => {
                     </div>
                   </div>
                 )}
+
                 <div className="border-t border-slate-100 pt-4 mt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-slate-600">Venue Rental:</span>
                     <div className="flex items-center font-medium">
-                      <IndianRupee className="w-4 h-4 mr-1" />
+                      <span className="mr-1">Rs.</span>
                       <span>
                         {calculateTotalPrice(bookingDetails.startTime, bookingDetails.endTime, venue.basePricePerHour)}
                       </span>
                     </div>
                   </div>
+
                   {bookingDetails.selectedServices.length > 0 && (
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-slate-600">Services:</span>
                       <div className="flex items-center font-medium">
-                        <IndianRupee className="w-4 h-4 mr-1" />
+                        <span className="mr-1">Rs.</span>
                         <span>
                           {bookingDetails.selectedServices.reduce((total, serviceId) => {
                             const service = venue.services.find((s) => s.serviceId.id === serviceId)
@@ -1031,10 +1063,11 @@ const BookNowPage = () => {
                       </div>
                     </div>
                   )}
+
                   <div className="flex justify-between items-center pt-2 border-t border-slate-100 mt-2">
                     <span className="font-semibold text-slate-900">Total:</span>
                     <div className="flex items-center font-bold text-purple-700 text-lg">
-                      <IndianRupee className="w-4 h-4 mr-1" />
+                      <span className="mr-1">Rs.</span>
                       <span>{totalPrice}</span>
                     </div>
                   </div>

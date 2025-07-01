@@ -11,13 +11,13 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
   const [isHovered, setIsHovered] = useState(false)
   const navigate = useNavigate()
   const { isAuthenticated, user } = useContext(AuthContext)
-  
+
   const locationText = location ? `${location.street}, ${location.city}` : "Location not available"
-  
+
   const averageRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : "New"
-  
+
   // Get service icon based on service name
   const getServiceIcon = (serviceName) => {
     const name = serviceName.toLowerCase()
@@ -30,13 +30,13 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
     if (name.includes("gift")) return <Gift className="w-4 h-4" />
     return <Sun className="w-4 h-4" />
   }
-  
+
   const handleFavoriteClick = (e) => {
     e.stopPropagation()
     setIsFavorite(!isFavorite)
     console.log(`Venue ${id} ${isFavorite ? "removed from" : "added to"} favorites`)
   }
-  
+
   return (
     <div
       className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 relative border border-gray-100"
@@ -46,12 +46,12 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
     >
       <div className="relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 opacity-${isHovered ? '70' : '50'} transition-opacity`}></div>
-        <img 
-          src={getOptimizedCloudinaryUrl(image) || "/api/placeholder/400/250"} 
-          alt={name} 
-          className={`w-full h-56 object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`} 
+        <img
+          src={getOptimizedCloudinaryUrl(image) || "/api/placeholder/400/250"}
+          alt={name}
+          className={`w-full h-56 object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
         />
-        
+
         <div className="absolute bottom-0 left-0 p-4 z-20 text-white">
           <div className="flex items-center">
             <div className="flex items-center bg-indigo-600 rounded-full px-2 py-1 mr-2">
@@ -64,52 +64,50 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
             </div>
           </div>
         </div>
-        
+
         {isAuthenticated && user && (
           <button
             onClick={handleFavoriteClick}
-            className={`absolute top-3 right-3 p-2 rounded-full shadow-lg z-20 transition-all ${
-              isFavorite 
-                ? 'bg-white' 
-                : 'bg-black/50 backdrop-blur-sm hover:bg-white/80'
-            }`}
+            className={`absolute top-3 right-3 p-2 rounded-full shadow-lg z-20 transition-all ${isFavorite
+              ? 'bg-white'
+              : 'bg-black/50 backdrop-blur-sm hover:bg-white/80'
+              }`}
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
-            <Heart 
-              className={`w-5 h-5 transition-colors ${
-                isFavorite 
-                  ? 'text-red-600 fill-red-500' 
-                  : 'text-white hover:text-red-500'
-              }`} 
+            <Heart
+              className={`w-5 h-5 transition-colors ${isFavorite
+                ? 'text-red-600 fill-red-500'
+                : 'text-white hover:text-red-500'
+                }`}
             />
           </button>
         )}
       </div>
-      
+
       <div className="p-5">
         <h3 className="text-xl font-bold mb-1 text-gray-800">{name}</h3>
-        
+
         <div className="flex items-center text-gray-500 mb-3 text-sm">
           <MapPin className="w-4 h-4 mr-1 text-indigo-500" />
           <p>{locationText}</p>
         </div>
-        
+
         <div className="border-t border-gray-100 pt-3 mb-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-1 text-indigo-500" />
               <span className="text-gray-500 text-sm">From</span>
-              <span className="font-bold text-lg text-indigo-600 ml-1">${basePricePerHour}</span>
+              <span className="font-bold text-lg text-indigo-600 ml-1">Rs. {basePricePerHour}</span>
               <span className="text-gray-500 text-sm ml-1">/hr</span>
             </div>
           </div>
         </div>
-        
+
         {services?.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {services.slice(0, 3).map((service, index) => {
               const ServiceIcon = () => getServiceIcon(service.serviceId.name);
-              
+
               return (
                 <div
                   key={index}
@@ -122,7 +120,7 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
                 </div>
               );
             })}
-            
+
             {services.length > 3 && (
               <div className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
                 +{services.length - 3}
@@ -130,8 +128,8 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
             )}
           </div>
         )}
-        
-        <button 
+
+        <button
           className="mt-4 text-indigo-600 hover:text-indigo-800 text-sm font-semibold flex items-center w-full justify-center py-2 border border-indigo-100 rounded-lg hover:bg-indigo-50 transition-colors"
         >
           View Details

@@ -130,10 +130,6 @@ export const MY_BOOKINGS = gql`
         start
         end
       }
-      phone
-      attendees
-      additionalNotes
-      eventType
       venue {
         id
         name
@@ -149,13 +145,6 @@ export const MY_BOOKINGS = gql`
         capacity
       }
       createdAt
-      selectedServices {
-        servicePrice
-        serviceId {
-          name
-          id
-        }
-      }
     }
   }
 `;

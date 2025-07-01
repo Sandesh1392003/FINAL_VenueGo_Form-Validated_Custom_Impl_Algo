@@ -32,6 +32,7 @@ import VenueDetails from "./components/VenueOwner/VenueDetails";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import AdminLogin from "./components/admin/Login";
 import ProtectedAdmin from "./middleware/ProtectedAdmin"
+import BookingReport from "./components/VenueOwner/BookingReport";
 function App() {
 
 
@@ -59,6 +60,7 @@ function App() {
         />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/OTPVerification" element={<OTPVerificationPage />} />
+        <Route path="/booking-report/:id" element={<BookingReport />} />
 
         {/* Authenticated User Routes */}
         <Route

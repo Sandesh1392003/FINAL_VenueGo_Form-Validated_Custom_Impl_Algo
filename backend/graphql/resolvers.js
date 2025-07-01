@@ -61,7 +61,10 @@ const resolvers = {
 
     // Fetch a single booking by ID
     booking: async (_, { id }) => {
-      return await Booking.findById(id).populate("venue").populate("user");
+      return await Booking.findById(id)
+        .populate("venue")
+        .populate("user")
+        .populate("selectedServices.serviceId");
     },
 
     // Fetch all users

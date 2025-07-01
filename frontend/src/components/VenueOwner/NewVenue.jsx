@@ -40,6 +40,8 @@ import {
   Triangle,
   Circle,
   Square,
+  IndianRupee,
+  DoorOpen,
 } from "lucide-react"
 import { useUploadImage } from "../Functions/UploadImage"
 import { useDeleteImage } from "../Functions/deleteImage"
@@ -445,7 +447,7 @@ const AddVenue = () => {
     {
       number: 3,
       title: "Pricing",
-      icon: DollarSign,
+      icon: DoorOpen,
       color: "bg-gradient-to-br from-violet-400 to-purple-500",
       shape: <Triangle className="absolute -z-10 text-violet-100 h-32 w-32 opacity-30 -top-10 -left-10 rotate-45" />,
     },
@@ -558,14 +560,14 @@ const AddVenue = () => {
                       key={category}
                       onClick={() => handleCategoryToggle(category)}
                       className={`flex items-center p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-300 ${venue.categories.includes(category)
-                          ? "border-purple-500 bg-purple-50 shadow-sm"
-                          : "border-slate-200 hover:border-purple-300 hover:bg-purple-50/30"
+                        ? "border-purple-500 bg-purple-50 shadow-sm"
+                        : "border-slate-200 hover:border-purple-300 hover:bg-purple-50/30"
                         }`}
                     >
                       <div
                         className={`w-7 h-7 flex items-center justify-center rounded-lg ${venue.categories.includes(category)
-                            ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white"
-                            : "border-2 border-slate-200"
+                          ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white"
+                          : "border-2 border-slate-200"
                           }`}
                       >
                         {venue.categories.includes(category) ? (
@@ -730,7 +732,7 @@ const AddVenue = () => {
               <div
                 className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
               >
-                <DollarSign className="h-8 w-8" />
+                <p className="h-8 w-8" >Rs </p>
               </div>
               <div>
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
@@ -751,7 +753,7 @@ const AddVenue = () => {
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500">
-                      <DollarSign className="h-5 w-5 text-white" />
+                      <p className="h-5 w-5 text-white">Rs</p>
                     </div>
                   </div>
                   <input
@@ -882,10 +884,10 @@ const AddVenue = () => {
 
               <div
                 className={`mt-4 flex flex-col justify-center items-center px-6 pt-8 pb-8 border-3 ${errors.image
-                    ? "border-rose-300 bg-rose-50"
-                    : isDragging
-                      ? "border-fuchsia-400 bg-fuchsia-50"
-                      : "border-fuchsia-200"
+                  ? "border-rose-300 bg-rose-50"
+                  : isDragging
+                    ? "border-fuchsia-400 bg-fuchsia-50"
+                    : "border-fuchsia-200"
                   } border-dashed rounded-2xl transition-all duration-300`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -1044,7 +1046,7 @@ const AddVenue = () => {
                   {/* Pricing Card */}
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
                     <div className="flex items-center mb-3">
-                      <DollarSign className="h-5 w-5 text-amber-500 mr-2" />
+                      <p className="h-5 w-5 text-amber-500 mr-2" >Rs</p>
                       <h4 className="font-medium text-amber-800">Pricing</h4>
                     </div>
                     <p className="text-sm text-amber-700">
@@ -1157,10 +1159,10 @@ const AddVenue = () => {
               <div key={step.number} className="flex flex-col items-center relative group">
                 <div
                   className={`flex items-center justify-center w-12 h-12 rounded-xl shadow-md transition-all duration-300 ${isActive
-                      ? `${step.color} text-white scale-110`
-                      : isCompleted
-                        ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white"
-                        : "bg-white text-slate-400 border border-slate-200"
+                    ? `${step.color} text-white scale-110`
+                    : isCompleted
+                      ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white"
+                      : "bg-white text-slate-400 border border-slate-200"
                     }`}
                 >
                   {isCompleted ? <Check className="h-6 w-6" /> : <Icon className="h-6 w-6" />}

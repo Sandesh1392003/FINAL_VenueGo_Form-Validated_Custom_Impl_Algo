@@ -126,8 +126,8 @@ const VenueDetailsPage = () => {
               <button
                 onClick={toggleFavorite}
                 className={`p-2 rounded-xl transition-all duration-300 ${isFavorited
-                    ? "bg-red-100 text-red-600 hover:bg-red-200"
-                    : "bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-600"
+                  ? "bg-red-100 text-red-600 hover:bg-red-200"
+                  : "bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-600"
                   }`}
               >
                 <Heart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
@@ -207,7 +207,7 @@ const VenueDetailsPage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-3xl font-bold text-purple-700 flex items-center">
-                          <IndianRupee className="w-6 h-6" />
+                          Rs.
                           {venue.basePricePerHour}
                         </div>
                         <div className="text-slate-600">per hour</div>

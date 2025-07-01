@@ -22,6 +22,7 @@ import {
   X,
   Grid,
   List,
+  LucideMoveLeft,
 } from "lucide-react"
 import AnotherLoader from "../../pages/common/AnotherLoader"
 import { useMutation, useQuery } from "@apollo/client"
@@ -260,7 +261,7 @@ export default function MyVenues() {
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 p-4 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600">
-                  <DollarSign className="h-6 w-6 text-white" />
+                  <LucideMoveLeft className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>

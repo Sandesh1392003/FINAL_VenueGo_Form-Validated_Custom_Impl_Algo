@@ -1,6 +1,7 @@
 "use client"
 
 import { useContext, useEffect, useRef, useState } from "react"
+
 import {
   Star,
   X,
@@ -18,6 +19,7 @@ import {
   Award,
   TrendingUp,
 } from "lucide-react"
+
 import { AuthContext } from "../../middleware/AuthContext"
 import Loader from "../../pages/common/Loader"
 import { useMutation } from "@apollo/client"
@@ -75,6 +77,7 @@ export default function MyBookingsPage() {
   const [selectedVenue, setSelectedVenue] = useState(null)
   const commentRef = useRef(null)
   const navigate = useNavigate()
+
   const [reviewForm, setReviewForm] = useState({
     rating: 0,
     comment: "",
@@ -84,9 +87,21 @@ export default function MyBookingsPage() {
 
   useEffect(() => {
     if (user?.bookings) {
-      setBookings(user.bookings)
+      // Sort bookings by date in descending order (latest first)
+      const sortedBookings = [...user.bookings].sort((a, b) => {
+        const dateA = new Date(a.date)
+        const dateB = new Date(b.date)
+        return dateB - dateA // Latest bookings first
+      })
+      setBookings(sortedBookings)
     }
   }, [user])
+
+  const handleGenerateReport = (bookingID) => {
+    // Navigate to booking report page with booking data
+    // You can pass the booking data through state or URL params
+    navigate(`/booking-report/${bookingID}`)
+  }
 
   if (loading) return <Loader />
 
@@ -101,6 +116,7 @@ export default function MyBookingsPage() {
       toast.error("Please select a rating")
       return
     }
+
     if (!reviewForm.comment.trim()) {
       toast.error("Please enter a comment")
       return
@@ -151,7 +167,6 @@ export default function MyBookingsPage() {
       <div className="relative group">
         {/* Magical Glow */}
         <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-75 group-hover:opacity-100 transition-all duration-500"></div>
-
         <div className="relative bg-white/95 backdrop-blur-2xl rounded-3xl max-w-md w-full p-8 shadow-2xl transform transition-all duration-500 scale-100 border border-white/50">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
@@ -245,7 +260,6 @@ export default function MyBookingsPage() {
               >
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-
                 <div className="relative flex items-center gap-2">
                   {reviewLoading ? (
                     <>
@@ -415,7 +429,7 @@ export default function MyBookingsPage() {
                       {/* Amazing Actions */}
                       <div className="col-span-3 flex items-center gap-3">
                         <button
-                          onClick={() => navigate(`/venue/${booking.venue.id}`)}
+                          onClick={() => handleGenerateReport(booking.id)}
                           className="group p-3 rounded-xl text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl"
                           title="View Venue"
                         >
