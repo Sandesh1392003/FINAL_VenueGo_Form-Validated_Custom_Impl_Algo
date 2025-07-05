@@ -1,5 +1,5 @@
 import express from "express";
-import { ApolloServer } from "@apollo/server"; 
+import { ApolloServer } from "@apollo/server";
 import cors from "cors";
 import dotenv from "dotenv";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -60,7 +60,7 @@ const startServer = async () => {
   await connectDB();
   console.log("Database connected");
 
-  // Apply GraphQL middleware
+  // Apply GraphQL middleware & single end point
   app.use(
     "/graphql",
     bodyParser.json(),
@@ -68,7 +68,7 @@ const startServer = async () => {
     expressMiddleware(server, {
       context: async ({ req, res }) => {
         // Add any additional context (e.g., auth token) here
-        return { req, res , user: req.user};
+        return { req, res, user: req.user };
       },
     })
   );

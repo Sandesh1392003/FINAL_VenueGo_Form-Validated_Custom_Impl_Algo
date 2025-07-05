@@ -8,7 +8,7 @@ import Loader from "../pages/common/Loader"
 import { toast } from "react-hot-toast"
 import { CreditCard, AlertCircle } from "lucide-react"
 
-const EsewaPaymentForm = ({ venue, date, start, end, selectedServices = [], totalAmount, disabled = false }) => {
+const EsewaPaymentForm = ({ venue, date, start, end, selectedServices = [], totalAmount, disabled = false },) => {
   const [formData, setFormData] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [isFormValid, setIsFormValid] = useState(false)
@@ -16,6 +16,13 @@ const EsewaPaymentForm = ({ venue, date, start, end, selectedServices = [], tota
   const [bookVenue, { loading: bookingLoading }] = useMutation(BOOK_VENUE)
   const [initiatePayment, { loading: iLoading }] = useMutation(INITIATE_PAYMENT)
   const [genSignature, { loading: sLoading }] = useMutation(GEN_SIGNATURE)
+
+  // Log formData whenever it changes
+  useEffect(() => {
+    if (formData) {
+      console.log("formData updated:", formData)
+    }
+  }, [formData])
 
   // Validate form whenever dependencies change
   useEffect(() => {
@@ -134,11 +141,10 @@ const EsewaPaymentForm = ({ venue, date, start, end, selectedServices = [], tota
         <button
           type="submit"
           disabled={!isFormValid || disabled || bookingLoading || iLoading || sLoading}
-          className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center transition-colors ${
-            isFormValid && !disabled && !bookingLoading && !iLoading && !sLoading
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
+          className={`w-full py-3 px-4 rounded-lg cursor-pointer font-medium flex items-center justify-center transition-colors ${isFormValid && !disabled && !bookingLoading && !iLoading && !sLoading
+            ? "bg-blue-600 text-white hover:bg-blue-700"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
         >
           <CreditCard className="mr-2" size={20} />
           {totalAmount > 0 ? `Proceed to Payment (Rs. ${totalAmount})` : "Proceed to Payment"}
@@ -153,4 +159,3 @@ const EsewaPaymentForm = ({ venue, date, start, end, selectedServices = [], tota
 }
 
 export default EsewaPaymentForm
-

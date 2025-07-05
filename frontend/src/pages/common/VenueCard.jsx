@@ -65,23 +65,6 @@ function VenueCard({ id, name, image, location, basePricePerHour, capacity, serv
           </div>
         </div>
 
-        {isAuthenticated && user && (
-          <button
-            onClick={handleFavoriteClick}
-            className={`absolute top-3 right-3 p-2 rounded-full shadow-lg z-20 transition-all ${isFavorite
-              ? 'bg-white'
-              : 'bg-black/50 backdrop-blur-sm hover:bg-white/80'
-              }`}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          >
-            <Heart
-              className={`w-5 h-5 transition-colors ${isFavorite
-                ? 'text-red-600 fill-red-500'
-                : 'text-white hover:text-red-500'
-                }`}
-            />
-          </button>
-        )}
       </div>
 
       <div className="p-5">

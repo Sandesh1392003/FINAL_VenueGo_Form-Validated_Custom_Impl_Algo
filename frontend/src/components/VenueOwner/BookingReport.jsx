@@ -60,7 +60,7 @@ export default function BookingReport({ companyInfo: propCompanyInfo }) {
     const companyInfo = propCompanyInfo || {
         name: "VenueGo",
         address: "123 Business Street, City, State 12345",
-        phone: "9865502032",
+        phone: "9861951616",
         email: "contact@VenueGo.com",
         website: "www.VenueGo.com",
     }

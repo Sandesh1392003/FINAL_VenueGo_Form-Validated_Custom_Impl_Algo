@@ -427,8 +427,8 @@ const ManageBookings = () => {
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2.5 ${viewMode === "grid"
-                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
-                      : "bg-white text-slate-500 hover:bg-purple-50"
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                    : "bg-white text-slate-500 hover:bg-purple-50"
                     } transition-all duration-300`}
                 >
                   <div className="grid grid-cols-2 gap-0.5">
@@ -441,8 +441,8 @@ const ManageBookings = () => {
                 <button
                   onClick={() => setViewMode("list")}
                   className={`p-2.5 ${viewMode === "list"
-                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
-                      : "bg-white text-slate-500 hover:bg-purple-50"
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                    : "bg-white text-slate-500 hover:bg-purple-50"
                     } transition-all duration-300`}
                 >
                   <div className="flex flex-col gap-0.5">
@@ -643,7 +643,7 @@ const ManageBookings = () => {
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-slate-900 line-clamp-1">{booking.venueName}</h3>
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-3.5 w-3.5 text-purple-600" />
+                        <p className="h-3.5 w-3.5 text-purple-600" >Rs. </p>
                         <span className="text-sm font-bold text-purple-700">{booking.totalPrice}</span>
                       </div>
                     </div>
@@ -807,8 +807,8 @@ const ManageBookings = () => {
                         key={pageNumber}
                         onClick={() => paginate(pageNumber)}
                         className={`px-3 py-1.5 rounded-md ${currentPage === pageNumber
-                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
-                            : "bg-white border border-purple-200 text-slate-700 hover:bg-purple-50"
+                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                          : "bg-white border border-purple-200 text-slate-700 hover:bg-purple-50"
                           } transition-colors duration-300`}
                       >
                         {pageNumber}
