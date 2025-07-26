@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   Check,
   MapPin,
-  DollarSign,
   Users,
   FileText,
   ImageIcon,
@@ -40,7 +39,6 @@ import {
   Triangle,
   Circle,
   Square,
-  IndianRupee,
   DoorOpen,
 } from "lucide-react"
 import { useUploadImage } from "../Functions/UploadImage"
@@ -102,6 +100,136 @@ const CATEGORY_ICONS = {
   COWORKING_SPACE: <Wifi className="h-4 w-4" />,
   PRIVATE_VILLA: <Home className="h-4 w-4" />,
   CORPORATE_EVENT_SPACE: <Briefcase className="h-4 w-4" />,
+}
+
+// Validation helper functions
+const validateText = (text, fieldName, minLength = 2, maxLength = 100) => {
+  const trimmedText = text.trim()
+
+  if (!trimmedText) {
+    return `Please enter ${fieldName}`
+  }
+
+  if (trimmedText.length < minLength) {
+    return `${fieldName} must be at least ${minLength} characters long`
+  }
+
+  if (trimmedText.length > maxLength) {
+    return `${fieldName} must not exceed ${maxLength} characters`
+  }
+
+  // Check if input contains only dots, spaces, or special characters
+  if (/^[.\s\-_!@#$%^&*()+={}[\]|\\:";'<>?,./]*$/.test(trimmedText)) {
+    return `Please enter a valid ${fieldName.toLowerCase()}`
+  }
+
+  // Check if input has meaningful content (at least one alphanumeric character)
+  if (!/[a-zA-Z0-9]/.test(trimmedText)) {
+    return `${fieldName} must contain at least one letter or number`
+  }
+
+  return null
+}
+
+const validateDescription = (text) => {
+  const trimmedText = text.trim()
+
+  if (!trimmedText) {
+    return "Please enter venue description"
+  }
+
+  if (trimmedText.length < 5) {
+    return "Description must be at least 5 characters long"
+  }
+
+  if (trimmedText.length > 1000) {
+    return "Description must not exceed 1000 characters"
+  }
+
+  // Check if description contains meaningful content
+  if (/^[.\s\-_!@#$%^&*()+={}[\]|\\:";'<>?,./]*$/.test(trimmedText)) {
+    return "Please enter a meaningful venue description"
+  }
+
+  if (!/[a-zA-Z0-9]/.test(trimmedText)) {
+    return "Description must contain at least one letter or number"
+  }
+
+  return null
+}
+
+const validateNumber = (value, fieldName, min = 1, max = 999999) => {
+  const trimmedValue = String(value).trim()
+
+  if (!trimmedValue) {
+    return `Please enter ${fieldName}`
+  }
+
+  const numValue = Number(trimmedValue)
+
+  if (isNaN(numValue)) {
+    return `${fieldName} must be a valid number`
+  }
+
+  if (numValue < min) {
+    return `${fieldName} must be at least ${min}`
+  }
+
+  if (numValue > max) {
+    return `${fieldName} must not exceed ${max}`
+  }
+
+  if (!Number.isInteger(numValue)) {
+    return `${fieldName} must be a whole number`
+  }
+
+  return null
+}
+
+const validateZipCode = (zipCode) => {
+  if (!zipCode) return null // Optional field
+
+  const trimmedZip = zipCode.trim()
+
+  if (trimmedZip && !/^\d{4,6}$/.test(trimmedZip)) {
+    return "ZIP code must be 4-6 digits"
+  }
+
+  return null
+}
+
+const validateImageFile = (file) => {
+  if (!file) {
+    return "Please select a venue image"
+  }
+
+  // Check file type
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    return "Please select a valid image file (JPEG, PNG, GIF, or WebP)"
+  }
+
+  // Check file size (25MB limit - more accommodating for high-res photos)
+  const maxSize = 25 * 1024 * 1024 // 25MB in bytes
+  if (file.size > maxSize) {
+    return "Image file size must be less than 25MB"
+  }
+
+  // Check minimum dimensions (more lenient for web photos)
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      if (img.width < 200 || img.height < 150) {
+        resolve("Image must be at least 200x150 pixels")
+      } else {
+        resolve(null)
+      }
+    }
+    img.onerror = () => {
+      resolve("Invalid image file")
+    }
+    img.src = URL.createObjectURL(file)
+  })
 }
 
 const AddVenue = () => {
@@ -175,6 +303,7 @@ const AddVenue = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+
     if (name.startsWith("location.")) {
       const locationField = name.split(".")[1]
       setVenue((prev) => ({
@@ -184,6 +313,7 @@ const AddVenue = () => {
           [locationField]: value,
         },
       }))
+
       if (locationField === "province") {
         setCities(cityData[value] || [])
         setVenue((prev) => ({
@@ -199,19 +329,34 @@ const AddVenue = () => {
     }
 
     // Clear errors when input changes
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }))
+    if (errors[name] || errors[name.split(".")[1]]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[name]
+        delete newErrors[name.split(".")[1]]
+        return newErrors
+      })
     }
   }
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0]
 
-    // Validate file is an image
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select an image file (JPEG, PNG, GIF, etc.)")
+      // Validate file
+      const basicValidation = validateImageFile(file)
+      if (typeof basicValidation === "string") {
+        toast.error(basicValidation)
         return
+      }
+
+      // For dimension validation (returns a promise)
+      if (typeof basicValidation === "object" && basicValidation.then) {
+        const dimensionError = await basicValidation
+        if (dimensionError) {
+          toast.error(dimensionError)
+          return
+        }
       }
 
       setVenue((prev) => ({ ...prev, image: file }))
@@ -234,16 +379,27 @@ const AddVenue = () => {
     setIsDragging(false)
   }
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault()
     setIsDragging(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
 
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select an image file (JPEG, PNG, GIF, etc.)")
+      // Validate file
+      const basicValidation = validateImageFile(file)
+      if (typeof basicValidation === "string") {
+        toast.error(basicValidation)
         return
+      }
+
+      // For dimension validation (returns a promise)
+      if (typeof basicValidation === "object" && basicValidation.then) {
+        const dimensionError = await basicValidation
+        if (dimensionError) {
+          toast.error(dimensionError)
+          return
+        }
       }
 
       setVenue((prev) => ({ ...prev, image: file }))
@@ -266,7 +422,6 @@ const AddVenue = () => {
   const handleCategoryToggle = (category) => {
     setVenue((prev) => {
       const categories = [...prev.categories]
-
       if (categories.includes(category)) {
         // Remove category if already selected
         return {
@@ -288,38 +443,52 @@ const AddVenue = () => {
     }
   }
 
-  const validateStep = (step) => {
+  const validateStep = async (step) => {
     const newErrors = {}
 
     switch (step) {
       case 1: // Basic Information
-        if (!venue.name.trim()) newErrors.name = "Venue name is required"
-        if (!venue.description.trim()) newErrors.description = "Description is required"
-        if (!venue.categories || venue.categories.length === 0)
-          newErrors.categories = "At least one category is required"
+        const nameError = validateText(venue.name, "Venue name", 2, 100)
+        if (nameError) newErrors.name = nameError
+
+        const descError = validateDescription(venue.description)
+        if (descError) newErrors.description = descError
+
+        if (!venue.categories || venue.categories.length === 0) {
+          newErrors.categories = "Please select at least one category"
+        }
         break
 
       case 2: // Location
-        if (!venue.location.street.trim()) newErrors.street = "Street address is required"
-        if (!venue.location.province) newErrors.province = "Province is required"
-        if (!venue.location.city) newErrors.city = "City is required"
-        if (venue.location.zipCode && isNaN(venue.location.zipCode)) {
-          newErrors.zipCode = "Zip code must be a number"
+        const streetError = validateText(venue.location.street, "Street address", 5, 200)
+        if (streetError) newErrors.street = streetError
+
+        if (!venue.location.province) {
+          newErrors.province = "Please select a province"
         }
+
+        if (!venue.location.city) {
+          newErrors.city = "Please select a city"
+        }
+
+        const zipError = validateZipCode(venue.location.zipCode)
+        if (zipError) newErrors.zipCode = zipError
         break
 
       case 3: // Capacity & Price
-        if (!venue.basePricePerHour || isNaN(venue.basePricePerHour) || venue.basePricePerHour <= 0) {
-          newErrors.basePricePerHour = "Valid price per hour is required"
-        }
-        if (!venue.capacity || isNaN(venue.capacity) || venue.capacity <= 0) {
-          newErrors.capacity = "Valid capacity is required"
-        }
+        const priceError = validateNumber(venue.basePricePerHour, "Price per hour", 1, 999999)
+        if (priceError) newErrors.basePricePerHour = priceError
+
+        const capacityError = validateNumber(venue.capacity, "Capacity", 1, 10000)
+        if (capacityError) newErrors.capacity = capacityError
         break
 
       case 4: // Image
         if (!venue.image) {
-          newErrors.image = "Venue image is required"
+          newErrors.image = "Please select a venue image"
+        } else {
+          const imageError = await validateImageFile(venue.image)
+          if (imageError) newErrors.image = imageError
         }
         break
     }
@@ -328,8 +497,9 @@ const AddVenue = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
+  const nextStep = async () => {
+    const isValid = await validateStep(currentStep)
+    if (isValid) {
       setCurrentStep(currentStep + 1)
       window.scrollTo(0, 0)
     } else {
@@ -350,7 +520,8 @@ const AddVenue = () => {
     setFormSubmitted(true)
 
     // Final validation
-    if (!validateStep(currentStep)) {
+    const isValid = await validateStep(currentStep)
+    if (!isValid) {
       Object.values(errors).forEach((error) => {
         if (error) toast.error(error)
       })
@@ -384,11 +555,13 @@ const AddVenue = () => {
         const response = await addVenue({
           variables: {
             venueInput: {
-              name: venue.name,
-              description: venue.description,
+              name: venue.name.trim(),
+              description: venue.description.trim(),
               location: {
-                ...venue.location,
-                zipCode: venue.location.zipCode ? Number.parseInt(venue.location.zipCode, 10) : null,
+                street: venue.location.street.trim(),
+                province: venue.location.province,
+                city: venue.location.city,
+                zipCode: venue.location.zipCode ? Number.parseInt(venue.location.zipCode.trim(), 10) : null,
               },
               basePricePerHour: Number.parseInt(venue.basePricePerHour, 10),
               capacity: Number.parseInt(venue.capacity, 10),
@@ -481,7 +654,6 @@ const AddVenue = () => {
         return (
           <div className="space-y-8 relative overflow-hidden">
             {currentStepData.shape}
-
             <div className="flex flex-col md:flex-row md:items-center gap-5">
               <div
                 className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
@@ -499,7 +671,6 @@ const AddVenue = () => {
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-2xl shadow-md border border-purple-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
                 <label htmlFor="name" className="block text-base font-medium text-slate-700 mb-2">
                   Venue Name <span className="text-purple-500">*</span>
                 </label>
@@ -509,7 +680,7 @@ const AddVenue = () => {
                   name="name"
                   value={venue.name}
                   onChange={handleChange}
-                  placeholder="Give your venue a memorable name"
+                  placeholder="Enter your venue name (e.g., Grand Ballroom, Conference Center)"
                   className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.name ? "border-rose-300 bg-rose-50" : "border-purple-200"
                     } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 text-lg`}
                 />
@@ -518,7 +689,6 @@ const AddVenue = () => {
 
               <div className="bg-white p-6 rounded-2xl shadow-md border border-purple-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-br-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
                 <label htmlFor="description" className="block text-base font-medium text-slate-700 mb-2">
                   Description <span className="text-purple-500">*</span>
                 </label>
@@ -527,7 +697,7 @@ const AddVenue = () => {
                   name="description"
                   value={venue.description}
                   onChange={handleChange}
-                  placeholder="Describe what makes your venue special. Include amenities, atmosphere, and unique features."
+                  placeholder="Describe what makes your venue special. Include amenities, atmosphere, unique features, and what events it's perfect for."
                   rows="5"
                   className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.description ? "border-rose-300 bg-rose-50" : "border-purple-200"
                     } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
@@ -541,7 +711,6 @@ const AddVenue = () => {
 
               <div className="bg-white p-6 rounded-2xl shadow-md border border-purple-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-tl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h3 className="text-base font-medium text-slate-700">
@@ -553,7 +722,6 @@ const AddVenue = () => {
                     {venue.categories.length} selected
                   </span>
                 </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {VENUE_CATEGORIES.map((category) => (
                     <div
@@ -590,7 +758,6 @@ const AddVenue = () => {
         return (
           <div className="space-y-8 relative overflow-hidden">
             {currentStepData.shape}
-
             <div className="flex flex-col md:flex-row md:items-center gap-5">
               <div
                 className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
@@ -607,7 +774,6 @@ const AddVenue = () => {
 
             <div className="bg-white p-6 rounded-2xl shadow-md border border-indigo-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
               <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-6">
                 <div className="sm:col-span-2">
                   <label htmlFor="street" className="block text-base font-medium text-slate-700 mb-2">
@@ -623,7 +789,7 @@ const AddVenue = () => {
                       name="location.street"
                       value={venue.location.street}
                       onChange={handleChange}
-                      placeholder="Enter full street address"
+                      placeholder="Enter complete street address (e.g., 123 Main Street, Downtown)"
                       className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.street ? "border-rose-300 bg-rose-50" : "border-indigo-200"
                         } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
                     />
@@ -696,7 +862,7 @@ const AddVenue = () => {
                     name="location.zipCode"
                     value={venue.location.zipCode}
                     onChange={handleChange}
-                    placeholder="Enter ZIP code"
+                    placeholder="Enter ZIP code (e.g., 44600)"
                     className={`w-full px-4 py-3.5 rounded-xl border-2 ${errors.zipCode ? "border-rose-300 bg-rose-50" : "border-indigo-200"
                       } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300`}
                   />
@@ -727,12 +893,11 @@ const AddVenue = () => {
         return (
           <div className="space-y-8 relative overflow-hidden">
             {currentStepData.shape}
-
             <div className="flex flex-col md:flex-row md:items-center gap-5">
               <div
                 className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
               >
-                <p className="h-8 w-8" >Rs </p>
+                <p className="h-8 w-8">Rs</p>
               </div>
               <div>
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
@@ -745,11 +910,9 @@ const AddVenue = () => {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="bg-white p-6 rounded-2xl shadow-md border border-violet-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-50 to-purple-50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
                 <label htmlFor="basePricePerHour" className="block text-base font-medium text-slate-700 mb-3">
                   Base Price per Hour <span className="text-violet-500">*</span>
                 </label>
-
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500">
@@ -762,8 +925,8 @@ const AddVenue = () => {
                     name="basePricePerHour"
                     value={venue.basePricePerHour}
                     onChange={handleChange}
-                    min="0"
-                    placeholder="0"
+                    min="1"
+                    placeholder="Enter hourly rate (e.g., 5000)"
                     className={`w-full pl-16 pr-20 py-4 rounded-xl border-2 ${errors.basePricePerHour ? "border-rose-300 bg-rose-50" : "border-violet-200"
                       } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-2xl font-bold text-slate-800 bg-white transition-all duration-300`}
                   />
@@ -772,7 +935,6 @@ const AddVenue = () => {
                   </div>
                 </div>
                 {errors.basePricePerHour && <p className="mt-2 text-sm text-rose-500">{errors.basePricePerHour}</p>}
-
                 <div className="mt-4 flex items-center bg-violet-50 p-3 rounded-xl">
                   <Clock className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
                   <p className="text-sm text-violet-700">
@@ -783,11 +945,9 @@ const AddVenue = () => {
 
               <div className="bg-white p-6 rounded-2xl shadow-md border border-violet-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-br from-purple-50 to-violet-50 rounded-tr-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
                 <label htmlFor="capacity" className="block text-base font-medium text-slate-700 mb-3">
                   Capacity <span className="text-violet-500">*</span>
                 </label>
-
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500">
@@ -801,7 +961,7 @@ const AddVenue = () => {
                     value={venue.capacity}
                     onChange={handleChange}
                     min="1"
-                    placeholder="0"
+                    placeholder="Enter maximum capacity (e.g., 150)"
                     className={`w-full pl-16 pr-20 py-4 rounded-xl border-2 ${errors.capacity ? "border-rose-300 bg-rose-50" : "border-violet-200"
                       } focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-2xl font-bold text-slate-800 bg-white transition-all duration-300`}
                   />
@@ -810,7 +970,6 @@ const AddVenue = () => {
                   </div>
                 </div>
                 {errors.capacity && <p className="mt-2 text-sm text-rose-500">{errors.capacity}</p>}
-
                 <div className="mt-4 flex items-center bg-violet-50 p-3 rounded-xl">
                   <Users className="h-5 w-5 text-violet-500 mr-2 flex-shrink-0" />
                   <p className="text-sm text-violet-700">Maximum number of people your venue can accommodate</p>
@@ -854,7 +1013,6 @@ const AddVenue = () => {
         return (
           <div className="space-y-8 relative overflow-hidden">
             {currentStepData.shape}
-
             <div className="flex flex-col md:flex-row md:items-center gap-5">
               <div
                 className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
@@ -871,7 +1029,6 @@ const AddVenue = () => {
 
             <div className="bg-white p-6 rounded-2xl shadow-md border border-fuchsia-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-fuchsia-50 to-purple-50 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="text-lg font-medium text-slate-800">Upload Venue Image</h3>
@@ -916,7 +1073,7 @@ const AddVenue = () => {
                         />
                       </label>
                     </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, GIF, WebP up to 25MB (minimum 200x150 pixels)</p>
                   </div>
                 ) : (
                   <div className="relative w-full">
@@ -938,7 +1095,6 @@ const AddVenue = () => {
                   </div>
                 )}
               </div>
-
               {errors.image && <p className="mt-3 text-sm text-rose-500">{errors.image}</p>}
             </div>
 
@@ -978,7 +1134,6 @@ const AddVenue = () => {
         return (
           <div className="space-y-8 relative overflow-hidden">
             {currentStepData.shape}
-
             <div className="flex flex-col md:flex-row md:items-center gap-5">
               <div
                 className={`flex items-center justify-center w-16 h-16 rounded-2xl ${currentStepData.color} text-white shadow-lg`}
@@ -995,7 +1150,6 @@ const AddVenue = () => {
 
             <div className="bg-white p-6 rounded-2xl shadow-md border border-indigo-100 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-[120px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-
               <div className="flex items-center mb-6">
                 <div className="flex-shrink-0">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center">
@@ -1046,7 +1200,7 @@ const AddVenue = () => {
                   {/* Pricing Card */}
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
                     <div className="flex items-center mb-3">
-                      <p className="h-5 w-5 text-amber-500 mr-2" >Rs</p>
+                      <p className="h-5 w-5 text-amber-500 mr-2">Rs</p>
                       <h4 className="font-medium text-amber-800">Pricing</h4>
                     </div>
                     <p className="text-sm text-amber-700">
@@ -1116,7 +1270,6 @@ const AddVenue = () => {
               <p className="text-slate-500 mt-1">List your space and start earning</p>
             </div>
           </div>
-
           <button
             onClick={() => navigate("/Dashboard/my-venues")}
             className="inline-flex items-center px-4 py-2 bg-white border-2 border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shadow-sm"
@@ -1139,7 +1292,6 @@ const AddVenue = () => {
               {progress}% Complete
             </span>
           </div>
-
           <div className="relative w-full h-3 bg-slate-200 rounded-full overflow-hidden">
             <div
               className={`absolute top-0 left-0 h-full bg-gradient-to-r ${currentStepData.color} transition-all duration-500 ease-in-out`}
@@ -1154,7 +1306,6 @@ const AddVenue = () => {
             const isActive = step.number === currentStep
             const isCompleted = step.number < currentStep
             const Icon = step.icon
-
             return (
               <div key={step.number} className="flex flex-col items-center relative group">
                 <div
@@ -1173,7 +1324,6 @@ const AddVenue = () => {
                 >
                   {step.title}
                 </span>
-
                 {/* Connecting line */}
                 {step.number < totalSteps && (
                   <div className="absolute top-6 left-full w-full h-0.5 bg-slate-200 -z-10">

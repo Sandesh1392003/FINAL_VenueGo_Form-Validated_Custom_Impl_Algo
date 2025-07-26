@@ -74,7 +74,12 @@ export default function VenuesPage() {
   useEffect(() => {
     if (venueTrie && searchTerm) {
       // Get unique venues for suggestions
-      const suggestions = venueTrie.autocomplete(searchTerm)
+
+      // replaced 79 with 80
+      // const suggestions = venueTrie.autocomplete(searchTerm)
+      const suggestions = venueTrie.search(searchTerm)
+
+
       // Remove duplicates by id
       const unique = []
       const seen = new Set()
@@ -405,8 +410,8 @@ export default function VenuesPage() {
                         key={category}
                         onClick={() => toggleCategoryFilter(category)}
                         className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${filters.categories.includes(category)
-                            ? "bg-purple-600 text-white"
-                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                          ? "bg-purple-600 text-white"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                           }`}
                       >
                         {formatCategory(category)}
@@ -431,8 +436,8 @@ export default function VenuesPage() {
                         key={service}
                         onClick={() => toggleServiceFilter(service)}
                         className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${filters.services.includes(service)
-                            ? "bg-purple-600 text-white"
-                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                          ? "bg-purple-600 text-white"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                           }`}
                       >
                         {service}
