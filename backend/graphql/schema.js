@@ -1,4 +1,6 @@
 // graphql/schema.js
+//GraphQL schema defines the structure and types of data clients can query or mutate.
+
 
 import { gql } from "apollo-server-express";
 
